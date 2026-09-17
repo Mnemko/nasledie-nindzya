@@ -255,6 +255,41 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .testHeader{padding-bottom:2px}.testHeaderTop{align-items:center}.testMeta{gap:5px;margin-top:6px}.testBadge{padding:4px 7px;font-size:10.5px}.testTools{margin-top:7px}.testTools button{min-height:34px}.aboutBox{margin-top:7px}.summary{gap:10px}.summary .box{padding:14px}.tabs{gap:6px;margin:12px 0}.tabs button{min-height:40px;padding:9px 12px}.team5Headline{align-items:center}.team5Index small{font-size:11px}.team5CompareCard span:first-child{font-weight:800;color:#dbe6ef}.team5CompareCard b{margin:3px 0}.team5Panel h3{font-size:13px}.readHelp{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:#101720;padding:9px 10px}.readHelp summary{cursor:pointer;font-weight:850;color:#dfe8f1}.readHelpBody{font-size:11px;line-height:1.5;color:var(--muted);margin-top:7px}.readHelpBody b{color:#eef5fb}.verifiedPool{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 10px;border:1px solid rgba(80,210,130,.35);border-radius:10px;background:rgba(38,125,76,.16);color:#a9edbf;font-weight:850;font-size:11px}
 @media(max-width:650px){.testHeader h1{font-size:19px}.testBadge{font-size:10px}.summary .box{padding:12px}.tabs button{font-size:12px;min-height:38px}.team5Index{font-size:28px}}
 
+
+
+/* 0.24.2 UI polish: compact header and cleaner formation blocks */
+.testHeader{margin-bottom:10px;padding-bottom:0}
+.testHeaderTop{align-items:center;gap:8px}
+.testHeader h1{font-size:24px;line-height:1.18;margin:0}
+.savedHint{margin-left:auto}
+.aboutBox{margin-top:9px}
+.aboutBox summary{
+  display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+  min-height:44px;padding:10px 12px;border-radius:11px;list-style:none;
+  background:var(--panel2);border:1px solid var(--line);font-size:12.5px;font-weight:850
+}
+.aboutBox summary::-webkit-details-marker{display:none}
+.aboutBox summary::after{content:"⌄";font-size:18px;line-height:1;color:var(--muted);transition:transform .15s ease}
+.aboutBox[open] summary::after{transform:rotate(180deg)}
+.aboutBody{margin-top:7px;padding:11px 12px;border-radius:11px}
+.aboutVersion{margin-top:9px;color:var(--muted);font-size:10.5px}
+.aboutTools{margin-top:9px}
+.aboutTools button{min-height:34px;padding:7px 10px;font-size:11.5px}
+.card{padding:14px}
+.formationGroup{padding:11px;background:#111821}
+.formationTitle{justify-content:flex-start;margin-bottom:9px;font-size:12.5px;letter-spacing:.02em}
+.selectorControl{grid-template-columns:minmax(0,1fr) 38px;gap:6px}
+.heroInfoBtn{width:38px;min-height:44px;font-size:17px}
+.positionNotes{gap:6px;margin-top:9px}
+.positionNote{padding:7px 9px;font-size:11.5px}
+.actions{gap:8px;margin-top:10px}
+.actions button.secondary{background:#18212d}
+@media(max-width:520px){
+  .testHeader h1{font-size:21px}
+  .aboutBox summary{font-size:12px;padding:9px 11px}
+  .card{padding:12px}
+  .formationGroup{padding:10px}
+}
 </style>
 </head>
 <body>
@@ -263,25 +298,20 @@ body.tg-miniapp .tgBuildBadge{display:flex}
   <div class="testHeaderTop">
     <h1>Наследие ниндзя: Надежда</h1>
   </div>
-  <div class="testMeta">
-    <span class="testBadge hot">Командная модель 5×5 · 0.24.2 · тестовая</span>
-    <span class="testBadge">Поздняя игра · 350 ур. · Чакра +30</span>
-    <span class="testBadge">Сборка · 20260917.7</span>
-    <span class="savedHint" id="savedHint">Состав сохранён</span>
-  </div>
-  <div class="testTools">
-    <button id="reportIssue" type="button">Сообщить о проблеме</button>
-    <button id="copyTestData" type="button" class="secondary">Скопировать данные проверки</button>
-  </div>
   <details class="aboutBox">
     <summary>ⓘ О калькуляторе и условиях расчёта</summary>
     <div class="aboutBody">
-      <b>Наследие ниндзя: Надежда</b> — калькулятор составов для поздней стадии игры.
-      Расчёт предполагает <b>350 уровень</b> персонажей и прокачку <b>Чакры +30</b>.
+      <b>Наследие ниндзя: Надежда</b> — калькулятор составов, ориентированный в первую очередь на позднюю игру.
+      Расчёты предполагают <b>350 уровень</b> персонажей и прокачанную <b>Чакру +30</b>.
       Основной объект анализа — вся пятёрка: расстановка, старт боя, давление, контроль, лечение, защита, спасение от гибели, синергии и уязвимости.
-      Позиционные эффекты фронта и заднего ряда учитываются только тогда, когда они подтверждены данными игры.
-      Калькулятор помогает оценивать составы и противостояния, но не гарантирует исход конкретного боя.
+      Позиционные эффекты учитываются только тогда, когда они подтверждены данными игры.
+      Результаты носят рекомендательный характер и могут меняться по мере уточнения игровых механик. Калькулятор не гарантирует исход конкретного боя.
       <div class="verifiedPool">✓ Данные активного пула проверены: 60/60</div>
+      <div class="aboutVersion">Тестовая версия 0.24.2 · сборка 20260917.7</div>
+      <div class="testTools aboutTools">
+        <button id="reportIssue" type="button">Сообщить о проблеме</button>
+        <button id="copyTestData" type="button" class="secondary">Скопировать данные проверки</button>
+      </div>
     </div>
   </details>
 </header>
@@ -430,11 +460,7 @@ function showToast(message){
   toastTimer=setTimeout(()=>node.classList.remove("show"),1800);
 }
 function showSavedHint(){
-  const node=document.getElementById("savedHint");
-  if(!node)return;
-  node.classList.add("show");
-  clearTimeout(saveHintTimer);
-  saveHintTimer=setTimeout(()=>node.classList.remove("show"),1200);
+  showToast("Состав сохранён");
 }
 function activeViewId(){
   return document.querySelector(".tabs button.active")?.dataset?.view || "synergy";
@@ -849,7 +875,7 @@ function enforceUniqueSelection(prefix,select){
 }
 function makeSelectors(root,prefix) {
   const node=$(root);
-  node.innerHTML=`<div class="formationGroup frontGroup"><div class="formationTitle">ФРОНТ <span>2 места · ближний бой</span></div><div class="formationSlots frontSlots" data-group="front"></div></div><div class="formationGroup backGroup"><div class="formationTitle">ЗАДНИЙ РЯД <span>3 места · дальний бой</span></div><div class="formationSlots backSlots" data-group="back"></div></div>`;
+  node.innerHTML=`<div class="formationGroup frontGroup"><div class="formationTitle">ФРОНТ</div><div class="formationSlots frontSlots" data-group="front"></div></div><div class="formationGroup backGroup"><div class="formationTitle">ЗАДНИЙ РЯД</div><div class="formationSlots backSlots" data-group="back"></div></div>`;
   const front=node.querySelector('[data-group="front"]'), back=node.querySelector('[data-group="back"]');
   for(let i=0;i<5;i++) {
     const pos=i<2?"front":"back", local=i<2?i+1:i-1;
