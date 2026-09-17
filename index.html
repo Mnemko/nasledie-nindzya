@@ -774,7 +774,7 @@ function heroContextHtml(p,prefix){
   if(!c)return `<div class="heroContextEmpty">Собери полную пятёрку — здесь появится вклад героя именно в этот состав: что он закрывает, что дублирует и какие риски остаются.</div>`;
   const add=c.adds.length?c.adds.map(x=>`<span class="contextPill good">${esc(x.label)}</span>`).join(""):`<span class="contextPill neutral">Нет выраженного уникального вклада по текущим данным</span>`;
   const dup=c.dupes.length?c.dupes.map(x=>`<span class="contextPill mid">${esc(x.label)}</span>`).join(""):`<span class="contextPill neutral">Крупного дублирования не найдено</span>`;
-  const risk=c.risks.map(x=>`<span class="contextPill bad">${esc(x.name)} · ${(x.v*100).toFixed(0)}</span>`).join("");
+  const risk=c.risks.map(x=>`<span class="contextPill bad">${esc(x.name)}</span>`).join("");
   const role=c.roles.length?`<div class="heroContextRole">В этой пятёрке: <b>${esc(c.roles.join(" + "))}</b>.</div>`:"";
   return `${role}<div class="heroContextLine"><b>Добавляет составу</b><div class="contextPills">${add}</div></div><div class="heroContextLine"><b>Уже частично закрыто другими</b><div class="contextPills">${dup}</div></div><div class="heroContextLine"><b>Слабые места пятёрки остаются</b><div class="contextPills">${risk}</div></div>`;
 }
@@ -1253,7 +1253,7 @@ function renderTeamProfile(){
   const unknown=e.timeline.unknown?`<div class="team5Warn">По ${e.timeline.unknown} персонаж${e.timeline.unknown===1?'у':'ам'} точная стартовая энергия не подтверждена — временно используется базовое значение 200. Это влияет на оценку первого окна ульты.</div>`:'';
   root.innerHTML=`<div class="team5Headline"><div><div class="team5Index">${(e.overall*100).toFixed(1)} <small>индекс устойчивости модели</small></div><div class="small">Это не вероятность победы и не сумма личных рейтингов.</div></div><span class="team5Label ${lab[1]}">${lab[0]}</span></div>
   <div class="team5Overview"><div class="team5Metric"><span>Первое окно ульты</span><b>~${e.timeline.firstUlt.toFixed(1)} с</b></div><div class="team5Metric"><span>Готовы к 10-й секунде</span><b>${Math.round(e.timeline.ready10*5)} / 5</b></div><div class="team5Metric"><span>${e.carryCandidates.length>1?'Основные источники давления':'Основной источник давления'}</span><b>${esc(teRoleDisplay(e,'carry'))}</b></div><div class="team5Metric"><span>${e.supportCandidates.length>1?'Ключевая поддержка':'Ключевая поддержка'}</span><b>${esc(teRoleDisplay(e,'support'))}</b></div></div>
-  <div class="team5Split"><div class="team5Panel"><h3>Лучше всего закрыто</h3>${strong.map(x=>`<div class="team5Line good">${esc(x.name)} · ${(x.v*100).toFixed(0)}</div>`).join('')}</div><div class="team5Panel"><h3>Самые опасные дыры</h3>${weak.map(x=>`<div class="team5Line bad">${esc(x.name)} · ${(x.v*100).toFixed(0)}</div>`).join('')}</div></div>
+  <div class="team5Split"><div class="team5Panel"><h3>Лучше всего закрыто</h3>${strong.map(x=>`<div class="team5Line good">${esc(x.name)}</div>`).join('')}</div><div class="team5Panel"><h3>Самые опасные дыры</h3>${weak.map(x=>`<div class="team5Line bad">${esc(x.name)}</div>`).join('')}</div></div>
   ${unknown}<div class="scenarioGrid">${team5ScenarioCards(e)}</div>
   <div class="small" style="margin-top:9px">Подтверждённые прямые синергии: ${e.direct}. Незакрытые условия: ${e.unmet}. Позиции считаются из выбранных слотов 2+3; +45 Speed Хаширамы не превращается в энергию.</div>`;
 }
