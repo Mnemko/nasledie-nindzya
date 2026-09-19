@@ -135,9 +135,23 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .savedHint.show{display:inline-flex}
 
 .autoInfo{font-size:11px;color:var(--muted);line-height:1.35;padding:6px 2px}
-.selectorControl{display:grid;grid-template-columns:minmax(0,1fr) 42px;gap:6px;align-items:stretch}
+.selectorControl{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px;gap:6px;align-items:stretch}
 .heroInfoBtn{min-height:44px;width:42px;padding:0;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:18px;border-radius:9px}
 .heroInfoBtn:disabled{opacity:.28;cursor:default}
+.heroSearchBtn{min-height:44px;width:42px;padding:0;background:var(--panel2);color:#ffd3a7;border:1px solid var(--line);font-size:19px}
+.heroSearchOverlay{position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.76);display:none;align-items:flex-end;justify-content:center;padding:10px}
+.heroSearchOverlay.open{display:flex}
+.heroSearchPanel{width:min(680px,100%);height:min(75dvh,680px);display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 18px 60px #0008}
+.heroSearchHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.heroSearchHead h2{font-size:17px;margin:0}.heroSearchHead button{width:38px;min-height:36px;padding:0;font-size:21px}
+.heroSearchInput{width:100%;min-height:46px;background:#101720;color:var(--text);border:1px solid #4c6073;border-radius:10px;padding:10px 12px;font-size:16px}
+.heroSearchList{display:grid;align-content:start;gap:6px;overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0}
+.heroSearchItem{width:100%;min-height:42px;text-align:left;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;line-height:1.4;font-size:13px;overflow-wrap:anywhere}
+.heroSearchItem small{display:block;font-size:11px;color:var(--muted)}
+.heroSearchItem.taken{background:#251b1b;border-color:#734343;color:#ffabab;cursor:not-allowed;opacity:.65}
+.heroSearchItem.current{border-color:#448760;background:#16271c;color:#aaf3c0}
+.heroSearchEmpty{font-size:12px;padding:12px;color:var(--muted)}
+@media(max-width:520px){.heroSearchOverlay{padding:0;align-items:flex-end}.heroSearchPanel{height:min(84dvh,760px);border-radius:18px 18px 0 0;padding:13px}}
 .heroInfoOverlay{position:fixed;inset:0;z-index:10010;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:10px}
 .heroInfoOverlay.open{display:flex}
 .heroInfoPanel{width:min(760px,100%);max-height:92dvh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 18px 60px rgba(0,0,0,.5)}
@@ -389,6 +403,10 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .synergyTech .synergyTechBody{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
 .synergyMissing{font-size:11.5px;color:#eadcaf;line-height:1.5;border:1px solid #5d4f31;background:var(--amberbg);padding:10px;border-radius:10px}
 
+.proofIntro{padding:11px;border:1px solid #344a60;background:#111e2b;border-radius:12px;margin:10px 0 13px;font-size:12px;line-height:1.5}
+.proofIntro>b{display:block;font-size:13px;margin-bottom:4px}
+.proofIntroRow{border-top:1px solid #2a3543;padding:8px 0;margin-top:5px}
+.proofIntroRow small{color:var(--muted);font-size:11px}
 </style>
 </head>
 <body>
@@ -486,7 +504,7 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 
 <section id="replace" class="view card">
   <h2>Кого можно заменить</h2>
-  <div class="replaceIntro">Предложения отсортированы по полезности для конкретной пятёрки. Замены без заметного улучшения и с неоправданной потерей механик не показываются. Зелёный — новая возможность, красный — утраченная механика, жёлтый — такая механика уже есть в составе.</div>
+  <div class="replaceIntro">Показываются только заметные улучшения по нескольким сценариям: потеря ключевого урона, поддержки и уникальных эффектов проверяется отдельно. Зелёный — новая возможность, красный — потеря, жёлтый — уже есть. <b>Это модель, а не результат реального боя.</b></div>
   <div id="replaceList" class="rows"></div>
 </section>
 
@@ -510,6 +528,13 @@ body.tg-miniapp .tgBuildBadge{display:flex}
   </div>
 </div>
 
+<div class="heroSearchOverlay" id="heroSearchOverlay" aria-hidden="true">
+ <div class="heroSearchPanel" role="dialog" aria-modal="true" aria-labelledby="heroSearchTitle">
+  <div class="heroSearchHead"><h2 id="heroSearchTitle">Найти персонажа</h2><button id="heroSearchClose" class="secondary" type="button" aria-label="Закрыть поиск">×</button></div>
+  <input id="heroSearchInput" class="heroSearchInput" type="search" placeholder="Имя или форма: Мадара, Риннеган…" autocomplete="off" aria-label="Поиск персонажа">
+  <div id="heroSearchList" class="heroSearchList"></div>
+ </div>
+</div>
 <div class="reportOverlay" id="reportOverlay" aria-hidden="true">
   <div class="reportPanel" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
     <div class="reportHead">
@@ -916,8 +941,67 @@ function openHeroInfo(id,prefix="team",index=0){
 }
 function closeHeroInfo(){const o=$("heroInfoOverlay");if(!o)return;o.classList.remove("open");o.setAttribute("aria-hidden","true")}
 
+// Короткие названия только для раскрывающегося списка.
+// Официальное имя в карточке, результатах анализа и базе не меняется.
+const SELECTOR_NAMES = Object.freeze({
+  "Мадара Учиха — Шесть Путей":"Мадара · Шесть Путей",
+  "Цунаде Сенджу — Режим Бьякуго":"Цунаде · Бьякуго",
+  "Сэндзю Хаширама — Режим Мудреца":"Хаширама · Мудрец",
+  "Хатаке Какаши — Камуи":"Какаши · Камуи",
+  "Мадара Учиха":"Мадара · обычный",
+  "Сенджу Тобирама — Второй Хокаге":"Тобирама · Второй Хокаге",
+  "Ооцуцуки Индра":"Индра",
+  "Учиха Обито":"Обито",
+  "Учиха Итачи — Воскрешение Нечистого Мира":"Итачи · Эдо Тенсей",
+  "Учиха \"Мадара\" — Белая Маска":"Белая Маска · «Мадара»",
+  "Шисуи Учиха — Сусаноо":"Шисуи · Сусаноо",
+  "Учиха Саске — Риннеган":"Саске · Риннеган",
+  "Ооцуцуки Шерин":"Шерин",
+  "Оцуцуки Хамура — Серебряные глаза падшей звезды":"Хамура · Серебряные глаза",
+  "Майто Гай — Восемь Врат — Врата Смерти":"Гай · 8 Врат Смерти",
+  "Узумаки Наруто — Режим Шести Путей":"Наруто · Шесть Путей",
+  "Намиказе Минато — Чакра Девятихвостого":"Минато · Чакра Кьюби",
+  "Сенджу Цунаде — Пятый Хокаге":"Цунаде · Пятый Хокаге",
+  "Ооцуцуки Асура":"Асура",
+  "Джирайя — Режим Мудреца":"Джирайя · Мудрец",
+  "Узумаки Наруто — Чакра Девятихвостого":"Наруто · Чакра Кьюби",
+  "Обито и Рин — Мечта Обито":"Обито и Рин · Мечта",
+  "Нагато — Воскрешение Нечистого Мира":"Нагато · Эдо Тенсей",
+  "Кушина Узумаки — Алый Перец":"Кушина · Алый Перец",
+  "Сакура Харуно — Война Ниндзя Сакура":"Сакура · Война ниндзя",
+  "Ооцуцуки Момошики":"Момошики",
+  "Ооцуцуки Хагоромо — Шестипутевое божество":"Хагоромо · Шесть Путей",
+  "Пэйн — Путь Дэва":"Пэйн · Дэва",
+  "Кисамэ Хошигаки — Слияние с Самехадой":"Кисамэ · Слияние с Самехадой",
+  "Харуно Сакура — Бьякугоу":"Сакура · Бьякуго",
+  "Саске Учиха — Сусаноо":"Саске · Сусаноо",
+  "Учиха Итачи":"Итачи · обычный",
+  "Джирайя":"Джирайя · обычный",
+  "Гаара — Шиппуден":"Гаара · Шиппуден",
+  "Майто Гай — Восемь Врат - Врата Взгляда":"Гай · Врата Взгляда",
+  "Намиказе Минато — Четвёртый Хокаге":"Минато · Четвёртый Хокаге",
+  "Цунаде Сенджу — Легендарные Саннины":"Цунаде · Саннины",
+  "А — Третий Райкаге":"Райкаге · Третий",
+  "Ооноки — Третий Цучикаге":"Ооноки · Третий Цучикаге",
+  "Шисуи Учиха":"Шисуи · обычный",
+  "Кисаме Хошигаки":"Кисамэ · обычный",
+  "Асума Сарутоби":"Асума",
+  "Данзо Шимура":"Данзо",
+  "Наруто Узумаки — Шиппуден":"Наруто · Шиппуден",
+  "Какаши Хатакэ — Копирующий Ниндзя":"Какаши · Копирующий ниндзя",
+  "А — Четвёртый Райкаге":"Райкаге · Четвёртый",
+  "Майто Гай":"Гай · обычный",
+  "Ханзо Саламандра — Полубог мира Шиноби":"Ханзо · Полубог",
+  "Саске Учиха — Шиппуден":"Саске · Шиппуден",
+  "Мэй Теруми — Возрождение Тумана":"Мэй · Возрождение Тумана",
+  "Карин Узумаки":"Карин",
+  "Генгетсу Хозуки — Второй Мизукаге":"Генгетсу · Второй Мизукаге"
+});
+function selectorName(p){ return SELECTOR_NAMES[p.name] || p.name; }
 function options() {
-  return '<option value="">— выбрать —</option>'+P.slice().sort((a,b)=>a.name.localeCompare(b.name,"ru")).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+  return '<option value="">— выбрать —</option>'+
+    P.slice().sort((a,b)=>selectorName(a).localeCompare(selectorName(b),"ru"))
+      .map(x=>`<option value="${x.id}" title="${esc(x.name)}">${esc(selectorName(x))}</option>`).join("");
 }
 function syncDuplicateOptions(prefix){
   const sels=Array.from({length:5},(_,i)=>document.getElementById(prefix+i)).filter(Boolean);
@@ -960,6 +1044,43 @@ function enforceUniqueSelection(prefix,select){
   tgHaptic("medium");
   return false;
 }
+let heroSearchTarget=null;
+function heroSearchNormalize(s){return String(s||'').toLocaleLowerCase('ru').replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim()}
+function closeHeroSearch(){
+ const o=$('heroSearchOverlay');if(o){o.classList.remove('open');o.setAttribute('aria-hidden','true')}
+ heroSearchTarget=null;
+}
+function renderHeroSearch(){
+ const node=$('heroSearchList'),input=$('heroSearchInput');if(!node||!heroSearchTarget)return;
+ const {prefix,index}=heroSearchTarget,sel=$(prefix+index),selected=new Set(Array.from({length:5},(_,i)=>i===index?'':$(prefix+i)?.value).filter(Boolean));
+ const terms=heroSearchNormalize(input.value).split(/\s+/).filter(Boolean);
+ const matches=P.filter(p=>{
+   const hay=heroSearchNormalize(selectorName(p)+' '+p.name);
+   return terms.every(t=>hay.includes(t));
+ }).sort((a,b)=>selectorName(a).localeCompare(selectorName(b),'ru'));
+ if(!matches.length){node.innerHTML='<div class="heroSearchEmpty">Персонажи не найдены.</div>';return}
+ const fragment=document.createDocumentFragment();
+ for(const p of matches){
+   const taken=selected.has(p.id),current=sel.value===p.id,btn=document.createElement('button');
+   btn.type='button';btn.className='heroSearchItem'+(taken?' taken':'')+(current?' current':'');btn.disabled=taken;
+   const label=document.createElement('span');label.textContent=(taken?'⛔ ':'')+selectorName(p)+(taken?' — уже выбран':current?' ✓':'');btn.appendChild(label);
+   if(p.name!==selectorName(p)){const sub=document.createElement('small');sub.textContent=p.name;btn.appendChild(sub)}
+   btn.addEventListener('click',()=>{
+     if(taken)return;
+     sel.value=p.id;
+     sel.dispatchEvent(new Event('change',{bubbles:true}));
+     closeHeroSearch();
+   });
+   fragment.appendChild(btn);
+ }
+ node.replaceChildren(fragment);
+}
+function openHeroSearch(prefix,index){
+ heroSearchTarget={prefix,index};$('heroSearchInput').value='';
+ $('heroSearchTitle').textContent=`Найти персонажа · ${prefix==='enemy'?'противник':'наш отряд'}, ${index<2?'фронт':'задний ряд'}`;
+ $('heroSearchOverlay').classList.add('open');$('heroSearchOverlay').setAttribute('aria-hidden','false');
+ renderHeroSearch();$('heroSearchInput').focus();
+}
 function makeSelectors(root,prefix) {
   const node=$(root);
   node.innerHTML=`<div class="formationGroup frontGroup"><div class="formationTitle">Фронт</div><div class="formationSlots frontSlots" data-group="front"></div></div><div class="formationGroup backGroup"><div class="formationTitle">Задний ряд</div><div class="formationSlots backSlots" data-group="back"></div></div>`;
@@ -967,7 +1088,7 @@ function makeSelectors(root,prefix) {
   for(let i=0;i<5;i++) {
     const pos=i<2?"front":"back", local=i<2?i+1:i-1;
     const d=document.createElement("div");
-    d.innerHTML=`<div class="selectorControl"><select id="${prefix}${i}" aria-label="${pos==="front"?"Фронт":"Задний ряд"}, место ${pos==="front"?i+1:i-1}">${options()}</select><button class="heroInfoBtn" type="button" aria-label="Открыть карточку персонажа" title="Карточка персонажа" disabled>ⓘ</button></div>`;
+    d.innerHTML=`<div class="selectorControl"><select id="${prefix}${i}" aria-label="${pos==="front"?"Фронт":"Задний ряд"}, место ${pos==="front"?i+1:i-1}">${options()}</select><button type="button" class="heroSearchBtn" aria-label="Поиск персонажа" title="Найти персонажа">⌕</button><button class="heroInfoBtn" type="button" aria-label="Открыть карточку персонажа" title="Карточка персонажа" disabled>ⓘ</button></div>`;
     (pos==="front"?front:back).appendChild(d);
     const select=d.querySelector("select"), info=d.querySelector(".heroInfoBtn");
     const syncInfo=()=>{info.disabled=!select.value};
@@ -979,6 +1100,7 @@ function makeSelectors(root,prefix) {
       showSavedHint();
     });
     info.addEventListener("click",()=>{if(select.value)openHeroInfo(select.value,prefix,i)});
+    d.querySelector(".heroSearchBtn").addEventListener("click",()=>openHeroSearch(prefix,i));
     syncInfo();
   }
 }
@@ -1373,7 +1495,7 @@ function teFirstUlt(p){
   const h=teBaseHero(p), feats=new Set(h?.features||[]);
   if(feats.has('opening_ultimate'))return .25;
   let time=Math.max(.25,(TEAM_ENGINE.ultThreshold-Math.min(TEAM_ENGINE.ultThreshold,teStartEnergy(p)))/TEAM_ENGINE.baseEnergyRate);
-  if(String(p.id)==='55010007'&&p.position==='back')time=Math.max(.2,time-.036); // +45 speed: tiny initiative, not energy
+  // Бонус скорости заднего ряда не равен известному приросту энергии: секунды не выдумываем.
   return time;
 }
 function teOpeningAction(p){const f=new Set(teBaseHero(p)?.features||[]);if(f.has('opening_ultimate'))return .25;if(f.has('opening_tech')||f.has('teamwide_taunt_open'))return .65;if(f.has('priority_carry_jump'))return .8;return null}
@@ -1458,15 +1580,42 @@ function team5ScenarioRow(x,t,state=''){
   return `<div class="team5ScenarioRow ${cls}"><div class="top"><b>${esc(x.name)}</b><span>${label}</span></div>`+
     `<p>${source?`На этот сценарий в модели прежде всего влияют: ${esc(source)}.`:'Модель не обнаружила выраженного вклада персонажей в этот сценарий.'}</p></div>`;
 }
+// Калибровка только ВИДИМОЙ шкалы. Внутренние баллы, 12 сценариев,
+// подбор замен и индекс 5×5 остаются исходными: это не изменение боевого баланса.
+// Для 60 активных героев проверено 36928 уникальных пятёрок с расстановкой
+// 2 впереди / 3 сзади. Эталон 100 для каждой оси — лучший НАЙДЕННЫЙ
+// состав именно по этой оси; математический глобальный максимум не доказан.
+// В следующих версиях модели/базы поиск эталонов нужно повторить.
+const TEAM5_AXIS_REFERENCE=Object.freeze({
+  offense:0.780324822069,
+  defense:0.646009942184,
+  disruption:0.842866171034,
+  support:0.655419906207,
+  keyRes:0.732847225857
+});
+const TEAM5_AXIS_KEY=Object.freeze({
+  'Давление':'offense','Защита':'defense',
+  'Контроль / срыв':'disruption','Контроль и срыв':'disruption',
+  'Командная поддержка':'support','Поддержка':'support',
+  'Сохранение ключевых ролей':'keyRes'
+});
+function team5VisibleAxis(title,raw){
+  const key=TEAM5_AXIS_KEY[title],reference=TEAM5_AXIS_REFERENCE[key];
+  const x=Number(raw);
+  if(!Number.isFinite(x))return 0;
+  return clamp((x/((Number.isFinite(reference)&&reference>0)?reference:1))*100,0,100);
+}
 function team5AxisItem(title,value,source,sourceLabel='Основной вклад'){
-  return `<div class="team5CoreItem"><div class="team5CoreItemTop"><span>${esc(title)}</span><b>${(value*100).toFixed(0)} / 100</b></div>`+
-    `<div class="team5CoreTrack"><i style="width:${clamp(value*100,0,100)}%"></i></div>`+
+  const visible=team5VisibleAxis(title,value);
+  return `<div class="team5CoreItem"><div class="team5CoreItemTop"><span>${esc(title)}</span><b>${visible.toFixed(0)} / 100</b></div>`+
+    `<div class="team5CoreTrack"><i style="width:${visible.toFixed(1)}%"></i></div>`+
     `<p>${source?`${esc(sourceLabel)}: ${esc(source)}.`:'Выраженный источник в составе не определён.'}</p></div>`;
 }
 function team5VersusAxisItem(title,ours,enemy){
-  const a=clamp(Number(ours)*100,0,100),b=clamp(Number(enemy)*100,0,100);
+  const a=team5VisibleAxis(title,ours),b=team5VisibleAxis(title,enemy);
   const delta=a-b;
-  const status=delta>=2.5?'У нас выше':delta<=-2.5?'У противника выше':'Показатели близки';
+  // Мелкая разница не является уверенным преимуществом.
+  const status=delta>=3?'У нас выше':delta<=-3?'У противника выше':'Показатели близки';
   const bar=(label,score,kind)=>`<div class="team5DuelRow ${kind}"><span class="team5DuelName">${label}</span><div class="team5DuelTrack"><i style="width:${score.toFixed(1)}%"></i></div><span class="team5DuelScore">${score.toFixed(0)}</span></div>`;
   return `<div class="team5CoreItem"><div class="team5CoreItemTop"><span>${esc(title)}</span><b>${esc(status)}</b></div>`+
     `<div class="team5Duel">${bar('Мы',a,'ours')}${bar('Противник',b,'enemy')}</div></div>`;
@@ -1498,6 +1647,7 @@ function renderTeamProfile(){
       <div class="team5Evidence"><div class="eyebrow">Первое окно боя</div><h3>${esc(early)}</h3><p>${esc(tm)}</p></div>
     </div>
     <h3 class="team5SectionTitle">Боевой фундамент пятёрки</h3>
+    <div class="small">100 — ориентир лучшей найденной пятёрки по каждому отдельному показателю, не процент побед.</div>
     <div class="team5CoreGrid">
       ${team5AxisItem('Давление',core.offense,team5DriverNames(t,'single_pressure').join(' · '))}
       ${team5AxisItem('Защита',core.defense,team5DriverNames(t,'team_sustain').concat(team5DriverNames(t,'team_save')).filter((n,i,a)=>a.indexOf(n)===i).slice(0,3).join(' · '))}
@@ -1505,7 +1655,7 @@ function renderTeamProfile(){
       ${team5AxisItem('Командная поддержка',core.support,team5DriverNames(t,'team_support').join(' · '))}
     </div>
     <div class="team5Subtext"><b>Источник данных об уроне:</b> атакующие коэффициенты и характеристики из карточек использованы как относительный ориентир; массовый урон считается только при подтверждённом действии на нескольких врагов. Контроль и снижение точности не считаются массовым уроном. Числа не означают фактический DPS или вероятность победы.</div>
-    <div class="team5Subtext">Шкала 0–100 — относительный показатель внутренней модели. Одинаковые значения не означают одинаковые механики и не предсказывают исход боя.</div>
+    <details class="team5Details team5ScaleHelp"><summary>Как читать новую шкалу 0–100?</summary><p>100 — ориентир по лучшей найденной пятёрке в ЭТОМ направлении среди 60 персонажей. Давление, защита, контроль и поддержка имеют отдельные эталоны: получить 100 сразу во всех четырёх категориях не обязательно возможно. Баллы показывают относительные возможности команды по модели, а не вероятность победы, фактический урон или подтверждённый максимум игры. Расчётные формулы и подбор замен не менялись.</p></details>
     <div class="team5EvidenceGrid">
       <div><h3 class="team5SectionTitle">На что состав опирается</h3>${best.map(x=>team5ScenarioRow(x,t)).join('')}</div>
       <div><h3 class="team5SectionTitle">Где состав уязвим</h3>${weak.map(x=>team5ScenarioRow(x,t,'bad')).join('')}</div>
@@ -1557,6 +1707,8 @@ function team5EarlyLeverage(e,opp){
 // Ранний старт даёт очки только если команда способна реализовать окно контролем,
 // срезом энергии или реальным давлением. Сам по себе тайминг больше не выигрывает матчап.
 function team5TempoRealization(A,B){
+  // При неизвестной стартовой энергии хотя бы одного героя сравнение секунд неинформативно.
+  if(A.timeline.unknown||B.timeline.unknown)return 0;
   const gap=clamp((B.timeline.firstUlt-A.timeline.firstUlt)/4,-1,1); // + = мы раньше
   const ready=clamp(A.timeline.ready10-B.timeline.ready10,-1,1);
   const speed=clamp(.68*gap+.32*ready,-1,1);
@@ -1841,7 +1993,7 @@ function renderVersus() {
   const core=coreDimensions.map(([label,key])=>({label,d:m.coreA[key]-m.coreB[key],a:m.coreA[key],b:m.coreB[key]}));
   const coreFacts=core.slice().sort((x,y)=>Math.abs(y.d)-Math.abs(x.d));
   const earlyGap=B.timeline.firstUlt-A.timeline.firstUlt;
-  const early=Math.abs(earlyGap)<=1?'Первое окно близкое':earlyGap>0?'У нашей пятёрки более ранний расчётный старт':'У противника более ранний расчётный старт';
+  const early=Math.abs(earlyGap)<=1.5||A.timeline.unknown||B.timeline.unknown?'Первое окно близкое или недостаточно данных':earlyGap>0?'У нашей пятёрки более ранний расчётный старт':'У противника более ранний расчётный старт';
   const signs=[['Фундамент пятёрок',m.parts.core],['11 сценариев без повтора старта',m.parts.scenarios],['Прямое взаимодействие',m.parts.interaction],['Реализация первого окна',m.parts.tempo]];
   const lead=signs.slice().sort((x,y)=>Math.abs(y[1])-Math.abs(x[1]))[0];
   const noPositive=interactions.positives.length===0,noRisk=interactions.risks.length===0;
@@ -1849,7 +2001,7 @@ function renderVersus() {
     <div class="team5Headline"><div><div class="team5Index">Анализ боя 5×5</div><div class="small">Сравниваются именно эти две пятёрки, а не отдельные рейтинги персонажей. Это сравнительная оценка модели, не вероятность победы.</div></div></div>
     <div class="team5EvidenceGrid">
       <div class="team5Evidence ${lab[1]==='good'?'good':lab[1]==='bad'?'bad':''}"><div class="eyebrow">Совокупное сравнение</div><h3>${esc(lab[0])}</h3><p>Наибольший вклад в разницу по модели: ${esc(lead[0].toLowerCase())}${Math.abs(lead[1])<.003?' (все различия невелики)':''}. Отдельные сильные механики не гарантируют исход боя.</p></div>
-      <div class="team5Evidence"><div class="eyebrow">Первое окно боя</div><h3>${esc(early)}</h3><p>У нас: ${esc(A.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. У противника: ${esc(B.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. Порядок ульт расчётный; раньше начать не означает автоматически получить перевес.</p></div>
+      <div class="team5Evidence"><div class="eyebrow">Первое окно боя</div><h3>${esc(early)}</h3><p>У нас: ${esc(A.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. У противника: ${esc(B.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. Порядок ульт ориентировочный: модель не знает точных интервалов атак, контроля и прироста энергии; разница до 1,5 с недостаточна для уверенного вывода.</p></div>
     </div>
     <h3 class="team5SectionTitle">Ключевые роли и их соперники</h3>
     <div class="team5EvidenceGrid">
@@ -1858,7 +2010,7 @@ function renderVersus() {
     </div>
     <h3 class="team5SectionTitle">Что показывает сравнение механик</h3>
     <div class="team5CoreGrid">${coreFacts.map(x=>team5VersusAxisItem(x.label,x.a,x.b)).join('')}</div>
-    <div class="team5Subtext">Зелёная шкала — наша команда, красная — противник. Числа — условные показатели модели из 100, не вероятность победы. Небольшую разницу не считаем явным преимуществом.</div>
+    <div class="team5Subtext">Зелёная шкала — наша команда, красная — противник. 100 в каждом направлении соответствует лучшему найденному составу по этому показателю в текущей модели; это не вероятность победы. Сравнение обеих команд использует одинаковые ориентиры. Небольшую разницу не считаем явным преимуществом.</div>
     <div class="team5EvidenceGrid">
       <div><h3 class="team5SectionTitle">Где у нас есть преимущество по модели</h3>${plus.length?plus.map(x=>team5ScenarioDifference(x,a,true)).join(''):'<div class="team5VersusFact">Выраженного преимущества по проверенным сценариям не найдено. Остальные различия можно посмотреть ниже.</div>'}</div>
       <div><h3 class="team5SectionTitle">На что обратить внимание</h3>${minus.length?minus.map(x=>team5ScenarioDifference(x,b,false)).join(''):'<div class="team5VersusFact">Выраженных слабых мест относительно противника по проверенным сценариям не найдено.</div>'}</div>
@@ -2074,6 +2226,15 @@ function syncReplaceModelUI(){
 
 // Плашки описывают реальное изменение покрытия механик всей пятёрки.
 // Если уходящий персонаж был не единственным источником эффекта — это не «потеря».
+const REPLACE_SIGNATURE_LABELS={
+ signature_mass_ultimate:'Массовая атака ультимейта',
+ signature_support_damage:'Дополнительный урон по поддержке',
+ signature_death_aoe:'Массовый урон при гибели',
+ signature_priority_jump:'Выход к главному атакующему',
+ signature_target_lock:'Фиксация цели',
+ signature_opening_ultimate:'Ультимейт в начале боя'
+};
+function replaceMechanicName(k){return L[k]||REPLACE_SIGNATURE_LABELS[k]||k}
 function heroSourceSignatures(p){
   const h=teBaseHero(p),f=new Set(h?.features||[]),out=new Set();
   const offensive=['fixed_damage','extra_damage','true_damage','hp_percent_damage'];
@@ -2097,7 +2258,7 @@ function replacementMechanicDiff(team, slot, newcomer){
   const oldSign=teamSourceSignatures(team),restSign=teamSourceSignatures(rest),newSign=teamSourceSignatures([...rest,newcomer]);
   const signatureLost=setDiff(oldSign,newSign),signatureGained=setDiff(newSign,oldSign);
   const sigShared=[...heroSourceSignatures(newcomer)].filter(k=>restSign.has(k));
-  const ordered=keys=>[...keys].filter(k=>Object.hasOwn(L,k))
+  const ordered=keys=>[...new Set(keys)].filter(k=>Object.hasOwn(L,k)||Object.hasOwn(REPLACE_SIGNATURE_LABELS,k))
     .sort((a,b)=>mechanicWeight(b)-mechanicWeight(a)||(L[a]||a).localeCompare(L[b]||b,'ru'));
   return {
     lost:ordered([...setDiff(before,after),...signatureLost]),
@@ -2106,7 +2267,7 @@ function replacementMechanicDiff(team, slot, newcomer){
   };
 }
 function replacementPills(keys,kind){
-  const chips=arr=>arr.map(k=>`<span class="replacePill ${kind}">${esc(L[k]||k)}</span>`).join('');
+  const chips=arr=>arr.map(k=>`<span class="replacePill ${kind}">${esc(replaceMechanicName(k))}</span>`).join('');
   if(!keys.length)return '<span class="replaceNone">Нет</span>';
   const visible=keys.slice(0,7),extra=keys.slice(7);
   return `<div class="replacePills">${chips(visible)}</div>${extra.length?`<details class="replaceMore"><summary>Ещё ${extra.length}</summary><div class="replacePills">${chips(extra)}</div></details>`:''}`;
@@ -2135,6 +2296,20 @@ function replacementJudge(team,slot,candidate,before,after,enemyDelta,enemyReady
   const lostWeight=sumMechanicWeight(changes.lost),gainedWeight=sumMechanicWeight(changes.gained);
   const uniqueLoss=changes.lost.some(k=>['limbo','death_save','team_save','revive','invulnerable','energy_drain_immunity','control_immunity'].includes(k));
   const meaningfulNew=changes.gained.some(k=>mechanicWeight(k)>=2.2)||majorGain.length>=2;
+  const oldCarry=priorRole.carry[0]?.s||0;
+  const newCarry=teRoleScores(team.map((p,i)=>i===slot?{...candidate,position:removed.position,slot:removed.slot}:p)).carry[0]?.s||0;
+  const roleCollapse=removedCarry&&oldCarry>.28&&newCarry<oldCarry-.06;
+  const oldSupport=priorRole.support[0]?.s||0;
+  const nextTeam=team.map((p,i)=>i===slot?{...candidate,position:removed.position,slot:removed.slot}:p);
+  const newSupport=teRoleScores(nextTeam).support[0]?.s||0;
+  const supportCollapse=priorRole.support[0]?.p.id===removed.id&&oldSupport>.27&&newSupport<oldSupport-.085;
+  const vulnerableDrop=after.carryRes+0.035<before.carryRes || after.supportRes+0.05<before.supportRes;
+  // Однотипные эффекты не должны маскировать потерю единственного атакующего / поддержки.
+  if(roleCollapse||supportCollapse||vulnerableDrop)return null;
+  if(changes.lost.some(k=>k.startsWith('signature_'))&&scenarios.filter(x=>x.d>.055).length<2)return null;
+  // Недоказанный порядок первых ультимейтов не должен быть решающей причиной рекомендации.
+  if(after.timeline.unknown>before.timeline.unknown&&after.agg('opening_tempo')-before.agg('opening_tempo')>.08&&d<.06)return null;
+
   // Не предлагаем «ничего не получаем, зато теряем» и не считаем дубли бонусом к набору техник.
   if(!meaningfulNew)return null;
   if(!changes.gained.length&&changes.lost.length)return null;
@@ -2143,12 +2318,16 @@ function replacementJudge(team,slot,candidate,before,after,enemyDelta,enemyReady
   if(keyLoss && !(d>=.065 && (!enemyReady || enemyDelta>=.02) && scenarioGain.length>=3))return null;
   if(uniqueLoss && gainedWeight<lostWeight+1.5)return null;
   if(majorLoss.length>=2 || scenarioLoss.length>=2)return null;
+  if(majorLoss.some(x=>['single_pressure','aoe_pressure','team_save','team_sustain','team_cleanse'].includes(x.key)) && !changes.gained.length)return null;
   if(scenarios.some(x=>x.before>=.25&&x.after<.25))return null;
   if(after.unmet>before.unmet || worst<-.012)return null;
   // Доверяем только одновременно сохраняемому ядру, улучшенным сценариям и новой функции.
   const meaningfulTeam=d>=.023&&scenarioGain.length>=2&&majorGain.length>=1;
   const meaningfulEnemy=enemyReady&&enemyDelta>=.045&&d>=.018&&scenarioGain.length>=1;
   if(!meaningfulTeam&&!meaningfulEnemy)return null;
+  // Отбрасываем мелкие прибавки, которые в пределах погрешности эвристических сценариев.
+  if(d<.055 && (!enemyReady || enemyDelta<.075))return null;
+  if(majorGain.length<1 || scenarioGain.filter(x=>x.d>=.05).length<1)return null;
   if(changes.lost.length&&gainedWeight<lostWeight+.5)return null;
   const score=d*100+Math.max(0,worst)*35+Math.max(0,enemyDelta)*25+
      Math.min(4,scenarioGain.length)*.45+Math.min(4,majorGain.length)*.5+
@@ -2185,10 +2364,13 @@ function renderReplace() {
     const imp=x.scenarioGain.slice().sort((a,b)=>b.d-a.d).slice(0,2).map(z=>`${z.name} +${(z.d*100).toFixed(1)}`).join('; ');
     const loss=x.scenarioLoss.slice().sort((a,b)=>a.d-b.d).slice(0,2).map(z=>`${z.name} ${(z.d*100).toFixed(1)}`).join('; ');
     const reason=[];
-    if(x.changes.gained.length)reason.push(`Новые механики: ${x.changes.gained.slice(0,2).map(k=>L[k]||k).join(', ')}${x.changes.gained.length>2?' и другие':''}.`);
+    if(x.changes.gained.length)reason.push(`Новые механики: ${x.changes.gained.slice(0,2).map(k=>replaceMechanicName(k)).join(', ')}${x.changes.gained.length>2?' и другие':''}.`);
     else reason.push('Новых типов механик нет; улучшается эффективность уже имеющихся эффектов.');
     if(imp)reason.push(`Улучшается: ${imp}.`);
-    if(x.changes.lost.length)reason.push(`Цена замены: ${x.changes.lost.slice(0,2).map(k=>L[k]||k).join(', ')}${x.changes.lost.length>2?' и другие':''}.`);
+    const axisLabels={single_pressure:'урон по цели',aoe_pressure:'массовый урон',team_save:'спасение команды',team_sustain:'лечение и устойчивость',team_cleanse:'очищение',control:'контроль',energy_offense:'срез энергии',team_support:'поддержка',penetration:'пробитие',opening_tempo:'старт'};
+    const meaningful=x.largeGain.slice().sort((a,b)=>b.d-a.d).slice(0,2).map(z=>`${axisLabels[z.key]||z.key} +${(z.d*100).toFixed(1)} п.`);
+    if(meaningful.length)reason.push(`Изменение возможностей пятёрки: ${meaningful.join(', ')}.`);
+    if(x.changes.lost.length)reason.push(`Цена замены: ${x.changes.lost.slice(0,2).map(k=>replaceMechanicName(k)).join(', ')}${x.changes.lost.length>2?' и другие':''}.`);
     if(loss)reason.push(`Снижается: ${loss}.`);
     const numerics=`<b>Индекс состава (не шанс победы):</b> ${(base.overall*100).toFixed(1)} → ${(x.ne.overall*100).toFixed(1)} <span class="deltaUp">(+${(x.d*100).toFixed(1)})</span><br><b>Самый слабый сценарий:</b> ${(baseWorst*100).toFixed(1)} → ${(Math.min(...x.ne.scenarios)*100).toFixed(1)}${enemyReady?`<br><b>Против выбранной пятёрки (индекс):</b> ${baseMatch.edge>=0?'+':''}${(baseMatch.edge*100).toFixed(1)} → ${x.nm.edge>=0?'+':''}${(x.nm.edge*100).toFixed(1)} <span class="${x.md>=0?'deltaUp':'deltaDown'}">(${x.md>=0?'+':''}${(x.md*100).toFixed(1)})</span>`:''}${imp?`<br><b>Усиливаются сценарии:</b> ${esc(imp)}`:''}${loss?`<br><b>Проседают сценарии:</b> ${esc(loss)}`:''}`;
     return `<div class="replaceCard"><div class="replaceCardHead"><div class="replaceNames"><span class="replacePlace">№ ${i+1}</span><span class="from">${esc(x.old.name)}</span><span class="arrow">→</span><span class="to">${esc(x.c.name)}</span></div><span class="replacePosition">${pos}</span></div><div class="replaceReason">${reason.map(z=>`<div>${esc(z)}</div>`).join('')}</div><div class="replaceGroups">${replacementGroup('− Теряем',x.changes.lost,'lost')}${replacementGroup('+ Получаем',x.changes.gained,'gained')}${replacementGroup('● Уже есть в составе',x.changes.shared,'shared')}</div><details class="replaceDetails"><summary>Подробности расчёта</summary><div class="replaceDetailsBody">${numerics}</div></details></div>`;
@@ -2243,7 +2425,10 @@ function proofMechanicCard(mech,arr) {
 function renderProof() {
   const t=getTeam("team");
   if(!t.length){$("proofList").innerHTML='<div class="mutedblock" style="margin-top:10px">Выбери персонажей.</div>';return}
-  $("proofList").innerHTML=t.map(p=>{
+  const evaluation=t.length===5?team5Eval(t):null;
+  const low=evaluation?team5ScenarioList(evaluation,'asc').slice(0,2):[];
+  const proofIntro=low.length?`<div class="proofIntro"><b>Что проверить в этой пятёрке</b><div class="small">Два наименее покрытых сценария по модели (не прогноз исхода):</div>${low.map(x=>`<div class="proofIntroRow"><b>${esc(x.name)}</b> · ${(x.v*100).toFixed(0)} / 100<br><small>Вклад в расчёт: ${esc(team5ScenarioSource(t,x.i)||'явный источник не установлен')}.</small></div>`).join('')}<div class="small">Ниже раскрываются конкретные эффекты из карточек. Число эффектов само по себе не означает боевое преимущество.</div></div>`:'';
+  $("proofList").innerHTML=proofIntro+t.map(p=>{
     const groups=Object.entries(p.structured||{}).filter(([,arr])=>arr&&arr.length);
     for(const r of ((p.positionRules||{})[p.position]||[])){
       const entry={source:"position",sourceLabel:r.label||"Позиция",scope:r.scope||"self",chance:100,duration:null,permanent:true,conditions:[`${positionName(p)}: ${r.text}`],requirements:[],evidence:"position",positionText:r.text};
@@ -2280,6 +2465,12 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
  saveState(false);
 }));
 
+$('heroSearchClose').addEventListener('click',closeHeroSearch);
+$('heroSearchOverlay').addEventListener('click',e=>{if(e.target===$('heroSearchOverlay'))closeHeroSearch()});
+$('heroSearchInput').addEventListener('input',renderHeroSearch);
+$('heroSearchInput').addEventListener('keydown',e=>{
+ if(e.key==='Enter'){const first=$('heroSearchList').querySelector('button:not(:disabled)');if(first){e.preventDefault();first.click()}}
+});
 $("heroInfoClose").addEventListener("click",closeHeroInfo);
 $("heroInfoOverlay").addEventListener("click",e=>{if(e.target===$("heroInfoOverlay"))closeHeroInfo()});
 document.querySelectorAll("[data-replace-model]").forEach(btn=>btn.addEventListener("click",()=>{replaceModel=btn.dataset.replaceModel||"v11";syncReplaceModelUI();renderReplace();tgHaptic("light")}));
@@ -2295,7 +2486,7 @@ $("reportShare").addEventListener("click",async()=>{
     else await copyText(text);
   }catch(e){if(e?.name!=="AbortError")await copyText(text)}
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHeroInfo();closeReport()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHeroInfo();closeReport();closeHeroSearch()}});
 
 // If a saved state was restored, indicate it once after first render.
 recalc();
