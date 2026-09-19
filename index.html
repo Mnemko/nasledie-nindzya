@@ -328,6 +328,12 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 @media(min-width:670px){.replaceGroups{grid-template-columns:1fr 1fr}.replaceGroup.shared{grid-column:1/-1}}
 
 </style>
+<style>
+/* Приоритет рекомендации и главное объяснение без технического шума. */
+.replacePlace{font-size:11px;font-weight:900;border:1px solid #745123;border-radius:999px;background:#342513;color:#ffdaa4;padding:4px 7px;white-space:nowrap}
+.replaceReason{font-size:11.5px;line-height:1.5;color:#d4e0eb;background:#101720;border-left:3px solid var(--accent);border-radius:8px;padding:8px 10px;margin:0 0 10px}
+.replaceReason>div+div{margin-top:3px}
+</style>
 </head>
 <body>
 <div class="app">
@@ -424,7 +430,7 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 
 <section id="replace" class="view card">
   <h2>Кого можно заменить</h2>
-  <div class="replaceIntro">Калькулятор показывает, какие механики теряет и получает <b>вся пятёрка</b> после замены. Зелёный — новая возможность, красный — механика больше не доступна, жёлтый — её уже даёт другой персонаж состава.</div>
+  <div class="replaceIntro">Предложения отсортированы по полезности для конкретной пятёрки. Замены без заметного улучшения и с неоправданной потерей механик не показываются. Зелёный — новая возможность, красный — утраченная механика, жёлтый — такая механика уже есть в составе.</div>
   <div id="replaceList" class="rows"></div>
 </section>
 
@@ -1848,6 +1854,67 @@ function replacementGroup(title,keys,kind){
   if(kind==='shared'&&!keys.length)return '';
   return `<div class="replaceGroup ${kind}"><div class="replaceGroupHead ${kind}">${title}</div>${replacementPills(keys,kind)}</div>`;
 }
+// Техническая проверка рекомендаций: не выдаём малый прирост индекса за достаточное
+// основание потерять собственную редкую механику, ключевую роль или целую категорию эффектов.
+const REPLACE_KEY_DIMS=['single_pressure','aoe_pressure','penetration','team_sustain','team_save','self_death_save','team_control_resist','team_cleanse','control','energy_offense','team_energy_support','team_support','opening_tempo'];
+function replacementFunctionalChanges(before,after){
+  return REPLACE_KEY_DIMS.map(k=>({key:k,d:after.agg(k)-before.agg(k)}));
+}
+function replacementJudge(team,slot,candidate,before,after,enemyDelta,enemyReady,changes,scenarios){
+  const d=after.overall-before.overall;
+  const worst=Math.min(...after.scenarios)-Math.min(...before.scenarios);
+  const meaningfulGain=changes.gained.filter(k=>mechanicWeight(k)>=2.2);
+  const gainedWeight=sumMechanicWeight(changes.gained),lostWeight=sumMechanicWeight(changes.lost);
+  const functional=replacementFunctionalChanges(before,after);
+  const largeLoss=functional.filter(x=>x.d<-.045);
+  const largeGain=functional.filter(x=>x.d>.045);
+  const scenarioGain=scenarios.filter(x=>x.d>.025);
+  const scenarioLoss=scenarios.filter(x=>x.d<-.045);
+  const old=team[slot];
+  const previous=Number(old.endgamePower||0),incoming=Number(candidate.endgamePower||0);
+  // Персональная оценка — только дополнительный предохранитель против очевидного
+  // обмена редкой боевой механики на рядовые дубли, НЕ основание предложить замену.
+  const severeDowngrade=previous>=65&&previous-incoming>=9;
+  const netGain=gainedWeight-lostWeight;
+  const protectedLoss=changes.lost.some(k=>mechanicWeight(k)>=3 || k==='limbo' || k==='death_save' || k==='team_save');
+  const uniqueSignatureLoss=changes.lost.some(k=>['limbo','death_save','team_save','revive','invulnerable'].includes(k));
+  const supportGain=largeGain.some(x=>['team_sustain','team_save','team_control_resist','team_cleanse','team_support','team_energy_support'].includes(x.key));
+  const offensiveLoss=largeLoss.some(x=>['single_pressure','aoe_pressure','penetration','opening_tempo'].includes(x.key));
+  const relevantEnemyGain=enemyReady&&enemyDelta>=.035;
+  // Отсечь «ничего нового, зато теряем»: высокая цифра индекса сама по себе
+  // не подтверждает полезность подмены роли/дублирующего хилера.
+  if(!changes.gained.length&&changes.lost.length)return null;
+  if(!changes.gained.length&&d<.055)return null;
+  if(!changes.gained.length&&!largeGain.length)return null;
+  if(changes.lost.length&&!meaningfulGain.length&&d<.055)return null;
+  if(protectedLoss&&netGain<0&&d<.055)return null;
+  if(severeDowngrade&&protectedLoss&&netGain<2.5)return null;
+  // Сильного носителя уникальной техники нельзя менять на более слабого только
+  // потому, что средний индекс предпочёл ещё одного защитника.
+  if(uniqueSignatureLoss&&previous-incoming>=5&&d<.06)return null;
+  if(severeDowngrade&&offensiveLoss&&!supportGain)return null;
+  if(offensiveLoss&&d<.04&&!relevantEnemyGain)return null;
+  if(largeLoss.length>=3&&d<.045)return null;
+  if(scenarioLoss.length>=3&&d<.045)return null;
+  if(scenarios.some(x=>x.before>=.25&&x.after<.25)&&d<.06)return null;
+  if(after.unmet>before.unmet&&d<.055)return null;
+  // Должна быть значимая, а не округлённая разница в работе всей команды.
+  const meaningfulTeam=d>=.019&&(scenarioGain.length>=2||worst>=.012||largeGain.length>0);
+  const meaningfulMatch=relevantEnemyGain&&d>=.008&&scenarioGain.length>=1;
+  const rescuedWeak=worst>=.04&&d>=.009&&scenarioGain.length>=2;
+  if(!meaningfulTeam&&!meaningfulMatch&&!rescuedWeak)return null;
+  if(d<0||worst<-.03)return null;
+  if(!changes.gained.length&&(!meaningfulTeam||largeLoss.length||scenarioLoss.length))return null;
+  if(changes.lost.length&&netGain<-.5&&d<.045)return null;
+  // В отдельной пятёрке может понадобиться смена роли — только при подтверждённом
+  // улучшении сценариев и без потери значимой способности без компенсации.
+  const score=d*120+Math.max(0,worst)*32+Math.max(0,enemyDelta)*35
+      +Math.min(5,Math.max(0,netGain))*.65+Math.min(4,scenarioGain.length)*.45
+      +Math.min(3,largeGain.length)*.5-Math.max(0,-worst)*80
+      -Math.min(8,lostWeight)*.7-largeLoss.length*1.5-scenarioLoss.length*.7
+      -Math.max(0,after.unmet-before.unmet)*3;
+  return {score,scenarioGain,scenarioLoss,functional,largeGain,largeLoss,worst};
+}
 function renderReplace() {
   const t=getTeam('team');
   if(t.length!==5){$('replaceList').innerHTML='<div class="mutedblock">Для подбора замен заполни все 5 мест.</div>';return}
@@ -1855,29 +1922,36 @@ function renderReplace() {
   const baseWorst=Math.min(...base.scenarios);
   for(let slot=0;slot<5;slot++){
     const old=t[slot];
-    for(const c of P.filter(p=>!ids.has(p.id)&&teBaseHero(p))){
-      const nt=t.slice();nt[slot]={...c,position:old.position,slot:old.slot};const ne=team5Eval(nt);if(!ne)continue;
-      const d=ne.overall-base.overall,nw=Math.min(...ne.scenarios),wd=nw-baseWorst;const deltas=TEAM_SCENARIOS.map((name,i)=>({name,d:ne.scenarios[i]-base.scenarios[i],before:base.scenarios[i],after:ne.scenarios[i]}));
-      const fixed=deltas.filter(x=>x.before<.32&&x.d>.045).sort((a,b)=>b.d-a.d),lost=deltas.filter(x=>x.d<-.055).sort((a,b)=>a.d-b.d);const newCritical=deltas.filter(x=>x.before>=.25&&x.after<.25);
+    for(const c of P){
+      if(ids.has(c.id)||!teBaseHero(c))continue;
+      const nt=t.slice();nt[slot]={...c,position:old.position,slot:old.slot};
+      const ne=team5Eval(nt);if(!ne)continue;
+      const changes=replacementMechanicDiff(t,slot,nt[slot]);
+      const scenarios=TEAM_SCENARIOS.map((name,i)=>({name,d:ne.scenarios[i]-base.scenarios[i],before:base.scenarios[i],after:ne.scenarios[i]}));
       const nm=enemyReady?team5Matchup(nt,enemy):null,md=enemyReady?nm.edge-baseMatch.edge:0;
-      // Прежний фильтр и порядок кандидатов не меняем: меняется только представление результата.
-      if(newCritical.length && md<.05)continue;
-      if(d<-.012 && wd<.025 && md<.035)continue;
-      if(d<.003 && wd<.012 && md<.018 && fixed.length===0)continue;
-      const score=d*100+wd*45+fixed.length*2.2-lost.length*2.4-newCritical.length*5+(enemyReady?md*38:0)+(ne.direct-base.direct)*.35-(ne.unmet-base.unmet)*.65;
-      if(score<1.0)continue;
-      cand.push({slot,old,c,nt,ne,d,wd,fixed,lost,newCritical,md,nm,score});
+      const verdict=replacementJudge(t,slot,c,base,ne,md,enemyReady,changes,scenarios);
+      if(!verdict)continue;
+      cand.push({slot,old,c,nt,ne,nm,md,changes,scenarios,d:ne.overall-base.overall, ...verdict});
     }
   }
-  cand.sort((a,b)=>b.score-a.score||b.d-a.d||b.wd-a.wd);
-  $('replaceList').innerHTML=cand.slice(0,15).map(x=>{
+  // Лучшие доказанные изменения — сверху. Равный результат: выше сохранность
+  // худшего сценария, затем новый функционал; алфавит — только последний критерий.
+  cand.sort((a,b)=>b.score-a.score||b.d-a.d||b.worst-a.worst||
+    sumMechanicWeight(b.changes.gained)-sumMechanicWeight(a.changes.gained)||
+    a.old.name.localeCompare(b.old.name,'ru')||a.c.name.localeCompare(b.c.name,'ru'));
+  $('replaceList').innerHTML=cand.slice(0,15).map((x,i)=>{
     const pos=x.slot<2?'Фронт':'Задний ряд';
-    const changes=replacementMechanicDiff(t,x.slot,x.nt[x.slot]);
-    const imp=x.fixed.slice(0,3).map(z=>`${z.name} +${(z.d*100).toFixed(1)}`).join('; ');
-    const loss=x.lost.slice(0,2).map(z=>`${z.name} ${(z.d*100).toFixed(1)}`).join('; ');
-    const numerics=`<b>Индекс состава (не шанс победы):</b> ${(base.overall*100).toFixed(1)} → ${(x.ne.overall*100).toFixed(1)} <span class="${x.d>=0?'deltaUp':'deltaDown'}">(${x.d>=0?'+':''}${(x.d*100).toFixed(1)})</span><br><b>Самый слабый сценарий:</b> ${(baseWorst*100).toFixed(1)} → ${(Math.min(...x.ne.scenarios)*100).toFixed(1)}${enemyReady?`<br><b>Против выбранной пятёрки (индекс):</b> ${baseMatch.edge>=0?'+':''}${(baseMatch.edge*100).toFixed(1)} → ${x.nm.edge>=0?'+':''}${(x.nm.edge*100).toFixed(1)} <span class="${x.md>=0?'deltaUp':'deltaDown'}">(${x.md>=0?'+':''}${(x.md*100).toFixed(1)})</span>`:''}${imp?`<br><b>Усиливаются сценарии:</b> ${esc(imp)}`:''}${loss?`<br><b>Проседают сценарии:</b> ${esc(loss)}`:''}`;
-    return `<div class="replaceCard"><div class="replaceCardHead"><div class="replaceNames"><span class="from">${esc(x.old.name)}</span><span class="arrow">→</span><span class="to">${esc(x.c.name)}</span></div><span class="replacePosition">${pos}</span></div><div class="replaceGroups">${replacementGroup('− Теряем',changes.lost,'lost')}${replacementGroup('+ Получаем',changes.gained,'gained')}${replacementGroup('● Уже есть в составе',changes.shared,'shared')}</div><details class="replaceDetails"><summary>Подробности расчёта</summary><div class="replaceDetailsBody">${numerics}</div></details></div>`;
-  }).join('')||'<div class="mutedblock">Безопасной замены, которая улучшает пятёрку целиком без новой критической дыры, не найдено.</div>';
+    const imp=x.scenarioGain.slice().sort((a,b)=>b.d-a.d).slice(0,2).map(z=>`${z.name} +${(z.d*100).toFixed(1)}`).join('; ');
+    const loss=x.scenarioLoss.slice().sort((a,b)=>a.d-b.d).slice(0,2).map(z=>`${z.name} ${(z.d*100).toFixed(1)}`).join('; ');
+    const reason=[];
+    if(x.changes.gained.length)reason.push(`Новые механики: ${x.changes.gained.slice(0,2).map(k=>L[k]||k).join(', ')}${x.changes.gained.length>2?' и другие':''}.`);
+    else reason.push('Новых типов механик нет; улучшается эффективность уже имеющихся эффектов.');
+    if(imp)reason.push(`Улучшается: ${imp}.`);
+    if(x.changes.lost.length)reason.push(`Цена замены: ${x.changes.lost.slice(0,2).map(k=>L[k]||k).join(', ')}${x.changes.lost.length>2?' и другие':''}.`);
+    if(loss)reason.push(`Снижается: ${loss}.`);
+    const numerics=`<b>Индекс состава (не шанс победы):</b> ${(base.overall*100).toFixed(1)} → ${(x.ne.overall*100).toFixed(1)} <span class="deltaUp">(+${(x.d*100).toFixed(1)})</span><br><b>Самый слабый сценарий:</b> ${(baseWorst*100).toFixed(1)} → ${(Math.min(...x.ne.scenarios)*100).toFixed(1)}${enemyReady?`<br><b>Против выбранной пятёрки (индекс):</b> ${baseMatch.edge>=0?'+':''}${(baseMatch.edge*100).toFixed(1)} → ${x.nm.edge>=0?'+':''}${(x.nm.edge*100).toFixed(1)} <span class="${x.md>=0?'deltaUp':'deltaDown'}">(${x.md>=0?'+':''}${(x.md*100).toFixed(1)})</span>`:''}${imp?`<br><b>Усиливаются сценарии:</b> ${esc(imp)}`:''}${loss?`<br><b>Проседают сценарии:</b> ${esc(loss)}`:''}`;
+    return `<div class="replaceCard"><div class="replaceCardHead"><div class="replaceNames"><span class="replacePlace">№ ${i+1}</span><span class="from">${esc(x.old.name)}</span><span class="arrow">→</span><span class="to">${esc(x.c.name)}</span></div><span class="replacePosition">${pos}</span></div><div class="replaceReason">${reason.map(z=>`<div>${esc(z)}</div>`).join('')}</div><div class="replaceGroups">${replacementGroup('− Теряем',x.changes.lost,'lost')}${replacementGroup('+ Получаем',x.changes.gained,'gained')}${replacementGroup('● Уже есть в составе',x.changes.shared,'shared')}</div><details class="replaceDetails"><summary>Подробности расчёта</summary><div class="replaceDetailsBody">${numerics}</div></details></div>`;
+  }).join('')||'<div class="mutedblock">Обоснованных улучшений для этой пятёрки не найдено. Менять персонажей только ради небольшой разницы индекса не предлагается.</div>';
 }
 
 function proofScope(scope) {
