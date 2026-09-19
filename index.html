@@ -1483,7 +1483,6 @@ function renderTeamProfile(){
   if(!e){root.innerHTML='<div class="mutedblock">Командная модель 5×5 сейчас рассчитана для активных боевых персонажей.</div>';return}
   const lab=team5OverallLabel(e.overall),core=team5CoreQuality(e);
   const best=team5ScenarioList(e,'desc').slice(0,3),weak=team5ScenarioList(e,'asc').slice(0,3);
-  const syn=directSynergies(t),unmet=unmetRequirements(t);
   const carryNames=teRoleDisplay(e,'carry'),supportNames=teRoleDisplay(e,'support');
   const attack=team5MechanicNames(t,['true_damage','hp_percent_damage','defense_bypass','defense_break','antiheal']);
   const sustain=team5MechanicNames(t,['heal','shield','damage_reduction','revive','invulnerable','death_save']);
@@ -1512,10 +1511,7 @@ function renderTeamProfile(){
       <div><h3 class="team5SectionTitle">Где состав уязвим</h3>${weak.map(x=>team5ScenarioRow(x,t,'bad')).join('')}</div>
     </div>
     <details class="team5Details"><summary>Все 12 проверочных сценариев</summary>${TEAM_SCENARIOS.map((name,i)=>team5ScenarioRow({name,i,v:e.scenarios[i]},t)).join('')}</details>
-    <h3 class="team5SectionTitle">Прямые связки и условия</h3>
-    ${syn.length?syn.slice(0,4).map(x=>`<div class="team5VersusFact good"><b>${esc(x.consumer)}</b> · ${esc(L[x.mechanic]||x.mechanic)}<small>${esc(x.text)}${x.cond?` Условие: ${esc(x.cond)}`:''}</small></div>`).join(''):'<div class="team5VersusFact">Прямых связок «эффект одного героя активирует условие другого» в выбранном составе не найдено. Совместное наличие атаки и защиты само по себе не подтверждает такую связку.</div>'}
-    ${syn.length>4?'<div class="team5Subtext">Остальные прямые связки показаны во вкладке «Синергии».</div>':''}
-    ${unmet.length?`<div class="team5Warn"><b>Незакрытые условия:</b> ${esc(unmet.slice(0,3).join(' · '))}</div>`:''}
+
   `;
 }
 function team5Attack(own,oe,opp,pe){
