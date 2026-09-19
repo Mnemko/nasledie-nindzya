@@ -368,6 +368,28 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .replaceReason{font-size:11.5px;line-height:1.5;color:#d4e0eb;background:#101720;border-left:3px solid var(--accent);border-radius:8px;padding:8px 10px;margin:0 0 10px}
 .replaceReason>div+div{margin-top:3px}
 </style>
+
+<style>
+
+/* Синергии: понятные связи вместо повторяющихся технических карточек. */
+.synergyGroupTitle{margin:6px 0 8px;font-size:15px;font-weight:850;color:var(--text)}
+.synergyGroupNote{font-size:11.5px;color:var(--muted);line-height:1.45;margin:0 0 9px}
+.synergyCard{border:1px solid #34465b;border-left:3px solid var(--green);background:#111c26;border-radius:11px;padding:11px;min-width:0}
+.synergyCard.solo{border-color:#5f522d;border-left-color:var(--amber);background:#1d1c19}
+.synergyCardTitle{font-size:14px;line-height:1.4;font-weight:850;overflow-wrap:anywhere}
+.synergyCardSubtitle{color:var(--muted);font-size:11.5px;margin-top:4px;line-height:1.4}
+.synergyLine{font-size:12px;line-height:1.5;margin-top:8px;color:#dce7f1}
+.synergyLine b{color:#b8f2cc}.synergyCard.solo .synergyLine b{color:#f4dda0}
+.synergyEffectList{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.synergyEffect{border:1px solid #315b43;background:var(--greenbg);color:#b8f2cc;padding:5px 8px;border-radius:999px;font-size:11.5px;font-weight:800}
+.synergyCard.solo .synergyEffect{border-color:#66532d;background:var(--amberbg);color:#f4dda0}
+.synergyCondition{font-size:11.5px;line-height:1.45;color:#d7e1ea;margin-top:8px}
+.synergyTech{margin-top:9px;padding:0;background:transparent}
+.synergyTech summary{font-size:11px;color:#adc8e1;font-weight:750}
+.synergyTech .synergyTechBody{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
+.synergyMissing{font-size:11.5px;color:#eadcaf;line-height:1.5;border:1px solid #5d4f31;background:var(--amberbg);padding:10px;border-radius:10px}
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -440,8 +462,8 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 </section>
 
 <section id="synergy" class="view card">
-  <h2>Подтверждённые связки</h2>
-  <div class="small" style="margin-bottom:10px">Здесь показываются прежде всего связи, где одна механика прямо является условием другой по данным игрового клиента.</div>
+  <h2>Синергии</h2>
+  <div class="small" style="margin-bottom:10px">Кто помогает союзникам активировать способности и какие комбинации персонажи выполняют самостоятельно. Совпадение условия ещё не гарантирует срабатывание: важны цель, момент применения и защита противника.</div>
   <div id="synergyList" class="rows"></div>
 </section>
 
@@ -1182,15 +1204,88 @@ function renderSummary() {
   $("weaknesses").innerHTML=w.length?w.map(x=>`<div class="row"><b>${esc(x[0])}</b><div class="reason">${esc(x[1])}</div></div>`).join(""):'<div class="row"><b>Явных дыр по базовым механикам не найдено</b><div class="reason">Дальше важны конкретный противник и реальные боевые тайминги.</div></div>';
 }
 
-function renderSynergy() {
-  const t=getTeam("team");
-  if(!t.length){$("synergyList").innerHTML='<div class="mutedblock">Сначала выбери свой состав.</div>';return}
-  const syn=directSynergies(t);
+// Отображение синергий отдельно от боевой формулы: только источник, который
+// может воздействовать на нужную сторону, показывается как возможный помощник.
+function synergySourceEntries(p,need,self=false){
+  const key=need==="crit"?"crit_buff":need;
+  const entries=mechEntries(p,key,false);
+  const enemyScopes=new Set(["enemy_target","skill_target","all_enemies","enemy","enemies_area","target"]);
+  const allyScopes=new Set(["ally","all_allies","all_friends","ally_random"]);
+  const enemyConditions=new Set(["stun","seal","silence","freeze","taunt","exile","knockback","energy_lock","antiheal"]);
+  return entries.filter(e=>{
+    if(need==="crit")return self?["self","all_allies"].includes(e.scope):allyScopes.has(e.scope);
+    if(enemyConditions.has(need))return enemyScopes.has(e.scope);
+    return self?["self","all_allies"].includes(e.scope):allyScopes.has(e.scope);
+  });
+}
+function synergyConditionName(need){
+  const names={crit:"Критический удар",stun:"Оглушение",seal:"Печать",silence:"Молчание",freeze:"Заморозка",spiritual_armor:"Духовная броня"};
+  return names[need]||L[need]||need;
+}
+function synergyActivationText(need){
+  const names={crit:"Навык должен нанести критический удар.",stun:"Цель должна быть оглушена в момент срабатывания эффекта.",seal:"Цель должна находиться под печатью в момент срабатывания эффекта.",freeze:"Цель должна быть заморожена в момент срабатывания эффекта."};
+  return names[need]||`В момент срабатывания эффекта должно выполняться условие «${synergyConditionName(need)}».`;
+}
+function synergyReadableEffect(k){
+  const names={extra_damage:"Дополнительный урон",energy_drain:"Снижение энергии врага",energy_lock:"Блокировка энергии",antiheal:"Ограничение лечения",heal:"Лечение",stun:"Оглушение",crit_buff:"Повышение шанса крита"};
+  return names[k]||L[k]||k;
+}
+function synergyViewGroups(t){
+  const groups=new Map();
+  for(const consumer of t)for(const r of consumer.requirements||[]){
+    if(!r.needs||r.needs.startsWith("buff:"))continue;
+    const need=r.needs;
+    const providersList=t.map(p=>({p,entries:synergySourceEntries(p,need,p.id===consumer.id)})).filter(x=>x.entries.length);
+    const own=providersList.some(x=>x.p.id===consumer.id);
+    const allies=providersList.filter(x=>x.p.id!==consumer.id);
+    if(!own&&!allies.length)continue;
+    const groupKey=`${consumer.id}|${need}`;
+    if(!groups.has(groupKey))groups.set(groupKey,{consumer,need,own,allies,effects:new Set(),proof:[]});
+    const group=groups.get(groupKey);
+    group.effects.add(r.forMechanic);
+    group.proof.push(r);
+  }
+  return [...groups.values()];
+}
+function synergyShortName(name){
+  const shorter={
+    "Сэндзю Хаширама — Режим Мудреца":"Хаширама",
+    "Шисуи Учиха — Сусаноо":"Шисуи Сусаноо",
+    "Учиха Саске — Риннеган":"Саске Риннеган"
+  };
+  return shorter[name]||name;
+}
+function synergyCard(group,solo=false){
+  const name=synergyShortName(group.consumer.name);
+  const allies=group.allies.map(x=>synergyShortName(x.p.name));
+  const isCrit=group.need==="crit";
+  const actors=solo?name:`${name} + ${allies.join(" + ")}`;
+  const title=solo?name:actors;
+  const effects=[...group.effects].map(k=>`<span class="synergyEffect">${esc(synergyReadableEffect(k))}</span>`).join("");
+  const helping=solo
+    ? (isCrit?`${name} может увеличить собственный шанс критического удара.`:`${name} способен самостоятельно наложить эффект «${synergyConditionName(group.need)}».`)
+    : (isCrit?`${allies.join(", ")} может повысить шанс критического удара у союзника.`:`${allies.join(", ")} может наложить эффект «${synergyConditionName(group.need)}» и помочь активировать перечисленные ниже эффекты.`);
+  const selfText=!solo&&group.own?` ${name} также может выполнить это условие самостоятельно.`:"";
+  const condition=synergyActivationText(group.need);
+  const source=group.proof.map(r=>`${r.sourceLabel||"Способность"}: ${synergyReadableEffect(r.forMechanic)} — ${(r.conditions||[]).join("; ")||"условие указано в клиенте"}`).filter((x,i,a)=>a.indexOf(x)===i);
+  const sources=group.allies.flatMap(x=>x.entries.map(e=>`${x.p.name}: ${e.sourceLabel||"Эффект"}; цель: ${e.scope||"не указана"}; шанс: ${e.chance==null?"не указан":`${e.chance}%`}`));
+  const tech=[...new Set([...source,...sources])].map(esc).join("<br>");
+  return `<div class="synergyCard${solo?" solo":""}"><div class="synergyCardTitle">${esc(title)}</div><div class="synergyCardSubtitle">${solo?"Самостоятельная комбинация":"Взаимодействие персонажей"} · условие: ${esc(synergyConditionName(group.need))}</div><div class="synergyLine">${esc(helping+selfText)}</div><div class="synergyLine"><b>При выполнении условия могут сработать:</b></div><div class="synergyEffectList">${effects}</div><div class="synergyCondition"><b>Важно:</b> ${esc(condition)} ${isCrit?"Повышение шанса не гарантирует критическое попадание.":"Нужно совпадение цели и времени; иммунитет или снятие эффекта могут помешать."}</div><details class="synergyTech"><summary>Технические подробности</summary><div class="synergyTechBody">${tech}</div></details></div>`;
+}
+function renderSynergy(){
+  const t=getTeam("team"),root=$("synergyList");
+  if(!t.length){root.innerHTML='<div class="mutedblock">Сначала выбери свой состав.</div>';return}
+  const groups=synergyViewGroups(t);
+  const teamLinks=groups.filter(g=>g.allies.length);
+  const ownLinks=groups.filter(g=>g.own&&!g.allies.length);
+  let html='<h3 class="synergyGroupTitle">🤝 Связки персонажей</h3>';
+  html+='<div class="synergyGroupNote">Союзник может помочь выполнить условие чужого навыка. Для гарантии нужны совпадение цели и нужный момент.</div>';
+  html+=teamLinks.length?teamLinks.map(g=>synergyCard(g)).join(""):'<div class="mutedblock">Прямых подтверждённых взаимодействий между разными персонажами в этой пятёрке не найдено.</div>';
+  html+='<h3 class="synergyGroupTitle" style="margin-top:13px">⚡ Самостоятельные комбинации</h3>';
+  html+=ownLinks.length?ownLinks.map(g=>synergyCard(g,true)).join(""):'<div class="mutedblock">Отдельных комбинаций с подтверждённым самостоятельным выполнением условия не найдено.</div>';
   const unmet=unmetRequirements(t);
-  let html=syn.map(x=>`<div class="row"><div class="rowhead"><b>${esc(x.consumer)}</b><span class="tag good">Подтверждено клиентом</span></div><div class="reason">${esc(x.text)}${x.cond?`<br><span class="small">Условие клиента: ${esc(x.cond)}</span>`:""}</div></div>`).join("");
-  if(!html)html='<div class="mutedblock">Прямых зависимостей «механика A активирует условие B» среди выбранных героев не найдено.</div>';
-  if(unmet.length)html+=`<div class="note badnote"><b></b><br>${unmet.map(esc).join("<br>")}</div>`;
-  $("synergyList").innerHTML=html;
+  if(unmet.length)html+=`<details class="synergyTech"><summary>Условия без найденного источника (${unmet.length})</summary><div class="synergyMissing">${unmet.map(x=>esc(x)).join("<br>")}</div></details>`;
+  root.innerHTML=html;
 }
 
 function pool() {
