@@ -572,6 +572,8 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
       Расчёт предполагает <b>350 уровень</b> персонажей и прокачку <b>Чакры +30</b>.
       Оценка учитывает состав и расстановку, но пока не воспроизводит каждый момент реального боя.
       Рекомендации ориентировочные: перед тратой ресурсов учитывай условия способностей персонажей.
+      Полевые скриншоты подтверждают, что суммарный урон и лечение сами по себе не определяют победителя;
+      без записей боя нельзя точно установить порядок контроля, выбывания и спасения героев.
     </div>
   </details>
 </header>
@@ -700,7 +702,7 @@ function tgHaptic(kind="light") {
 }
 
 
-const TEST_VERSION = "0.24.7-context-20260920";
+const TEST_VERSION = "0.24.8-field-audit-20260922";
 const STORAGE_KEY = "nasledie_nindzya_state_v0151";
 let saveHintTimer = null;
 let toastTimer = null;
@@ -892,6 +894,9 @@ const CLIENT_VERIFIED_ALTERNATE_ACTIONS={
               note:'Техника даёт 4 усиленных обычных атаки по области (400% АТК); Чакра +20 усиливает урон ульты на 40%. Разгон «Судьбы» и дополнительный фиксированный урон требуют отдельной проверки очередности.'}
 };
 const CLIENT_CYCLE_REFERENCE={};
+// Each profile's attack basket depends on the immutable card ID, not its slot.
+// Repeated scoring of ~275 candidate replacements reuses these values.
+const CLIENT_CYCLE_CACHE=new Map();
 function clientActionDamageForCount(a,targetCount){
  if(!a?.direct||!Number.isFinite(a.sample)||a.sample<=0)return 0;
  const n=Math.max(1,Math.min(5,Number(targetCount)||1));
@@ -909,6 +914,8 @@ function clientActionSingleDamage(a){
  return a.targetScope==='chain'||a.targetScope==='split'?(a.singleHitSample||0):(a.singleHitSample??a.sample??0);
 }
 function clientCycleProfile(p){
+ const key=String(p?.id||'');
+ if(CLIENT_CYCLE_CACHE.has(key))return CLIENT_CYCLE_CACHE.get(key);
  const rec=clientEntry(p),actions=rec?.actions||{};
  const normal=actions.normal,skill=actions.technique,ultimate=actions.ultimate;
  const special=CLIENT_VERIFIED_ALTERNATE_ACTIONS[String(p?.id)];
@@ -926,9 +933,11 @@ function clientCycleProfile(p){
    return clientActionDamageForCount(ultimate,count)*(1+ultBuff)+clientActionDamageForCount(skill,count)+2*normalValue;
  };
  const opening=skill?.openingGuaranteed?clientActionDamageForCount(skill,3):0;
- return {one,spread:group(1),cluster:group(3),full:group(5),opening,
+ const profile={one,spread:group(1),cluster:group(3),full:group(5),opening,
    openingConfirmed:Boolean(skill?.openingGuaranteed),startSkill:skill?.openingGuaranteed?skill:null,
    adjustedBasics:enhanced,techniqueBuffSource:special?.source||null,techniqueBuffNote:special?.note||null};
+ CLIENT_CYCLE_CACHE.set(key,profile);
+ return profile;
 }
 function clientCycleValue(p,metric){
  const profile=clientCycleProfile(p);
@@ -2175,8 +2184,11 @@ function teOffensiveCoverage(t){
   // Нельзя заменить единственного атакующего героя саппортом и выдать доп. щит за полную компенсацию.
   return {top,second,combined:clamp(.75*top+.25*second,0,1),sources:scores.filter(x=>x.v>=.22).length};
 }
+const TEAM5_EVAL_CACHE=new Map();
 function team5Eval(t){
   if(t.length!==5||t.some(p=>!teBaseHero(p)))return null;
+  const cacheKey=t.map(p=>String(p.id)+':' + String(p.position)).join('|');
+  if(TEAM5_EVAL_CACHE.has(cacheKey))return TEAM5_EVAL_CACHE.get(cacheKey);
   const role=tePrimary(t),{carry,support,carryCandidates,supportCandidates}=role,A=d=>teAgg(t,d);const allRes=t.map(p=>teTargetRes(t,p));const avgRes=allRes.reduce((a,b)=>a+b,0)/5;
   const front=t.filter(p=>p.position==='front'),back=t.filter(p=>p.position==='back');const frontRes=front.reduce((s,p)=>s+teTargetRes(t,p),0)/Math.max(1,front.length);const backRes=back.reduce((s,p)=>s+teTargetRes(t,p),0)/Math.max(1,back.length);
   const tl=teTimeline(t),firstSpeed=clamp((12-tl.firstUlt)/6,0,1),medianSpeed=clamp((13-tl.medianUlt)/6,0,1),openingPresence=Math.min(1,tl.openers/2),tempoWindow=clamp(.45*firstSpeed+.30*tl.ready10+.15*openingPresence+.10*medianSpeed,0,1);
@@ -2209,7 +2221,10 @@ function team5Eval(t){
   const unmet=unmetRequirements(t).length;
   const sf=clamp(1+Math.min(.04,direct*.01)-Math.min(.06,unmet*.02),.94,1.04);
   sc=sc.map(x=>clamp(x*placement*sf,0,1));const sorted=sc.slice().sort((a,b)=>a-b);const overall=.58*(sc.reduce((a,b)=>a+b,0)/sc.length)+.27*sorted[2]+.15*sorted[0];
-  return {overall,scenarios:sc,carry,support,carryCandidates,supportCandidates,carryMeaningful:role.carryMeaningful,supportMeaningful:role.supportMeaningful,roleScores:role.roleScores,timeline:tl,frontRes,backRes,avgRes,carryRes,supportRes,carryDeathSave,placement,direct,unmet,offense,agg:A};
+  const result={overall,scenarios:sc,carry,support,carryCandidates,supportCandidates,carryMeaningful:role.carryMeaningful,supportMeaningful:role.supportMeaningful,roleScores:role.roleScores,timeline:tl,frontRes,backRes,avgRes,carryRes,supportRes,carryDeathSave,placement,direct,unmet,offense,agg:A};
+  if(TEAM5_EVAL_CACHE.size>1500)TEAM5_EVAL_CACHE.clear();
+  TEAM5_EVAL_CACHE.set(cacheKey,result);
+  return result;
 }
 function team5ScenarioClass(v){return v>=.44?'strong':v<.25?'risk':''}
 function team5OverallLabel(v){const x=v*100;if(x>=42)return ['Очень устойчивый профиль','good'];if(x>=36)return ['Сильный профиль','good'];if(x>=31)return ['Рабочий профиль','mid'];if(x>=26)return ['Нестабильный профиль','mid'];return ['Много критических дыр','bad']}
@@ -2305,7 +2320,7 @@ function renderTeamProfile(){
   const attack=team5MechanicNames(t,['true_damage','hp_percent_damage','defense_bypass','defense_break','antiheal']);
   const sustain=team5MechanicNames(t,['heal','shield','damage_reduction','revive','invulnerable','death_save']);
   const ctrl=team5MechanicNames(t,controlKeys);
-  const early=e.timeline.order.slice(0,2).map(x=>x.p.name).join(' · ');
+  const early=e.timeline.unknown?'Порядок не подтверждён':e.timeline.order.slice(0,2).map(x=>x.p.name).join(' · ');
   const tm=e.timeline.unknown?`Для ${e.timeline.unknown} персонаж(ей) в базе нет подтверждённого стартового значения энергии; порядок ульт ориентировочный.`:'Порядок первых ульт — расчётный ориентир, не запись реального боя.';
   root.innerHTML=`
     <div class="team5Headline"><div><div class="team5Index">Возможности пятёрки</div></div><span class="team5Label ${lab[1]}">${lab[0]}</span></div>
@@ -2331,13 +2346,21 @@ function renderTeamProfile(){
   `;
 }
 function team5Attack(own,oe,opp,pe){
-  const A=d=>oe.agg(d);
-  const focus=Math.max(A('focus')*(1-pe.carryRes),A('focus')*.92*(1-pe.supportRes));
-  const aoe=A('aoe_pressure')*(1-pe.avgRes);
+  const A=d=>oe.agg(d),B=d=>pe.agg(d);
+  // Полевые испытания: урон сам по себе не равен устранению цели. Массовое
+  // давление встречает командное лечение/сейв, а фокус — защиту ключевой роли.
+  // Это ограниченные поправки к механическому ПРОКСИ, а не обученная по 19 боям
+  // вероятность победы или симуляция реально нанесённых миллионов урона.
+  const focus=A('focus')*Math.max(0,1-.57*pe.carryRes-.25*pe.supportRes-.12*B('team_save'));
+  const aoe=A('aoe_pressure')*Math.max(0,1-.54*pe.avgRes-.20*B('team_sustain')-.12*B('team_save'));
   const pen=A('penetration')*(1-pe.frontRes*.55);
-  const sustain=A('antiheal')*.55+A('dispel')*.25;
-  const ctrl=A('control')*(1-.55*pe.agg('team_control_resist')-.25*pe.agg('team_cleanse'));
-  return .24*focus+.18*aoe+.18*pen+.12*sustain+.13*Math.max(0,ctrl)+.15*A('single_pressure');
+  // Антихил ценнее именно против соперника, который зависит от лечения.
+  // Рассеивание ценнее против команды, опирающейся на сейвы/усиления.
+  const counterSustain=A('antiheal')*(.20+.58*B('team_sustain'))
+       +A('dispel')*(.14+.44*B('team_save'));
+  const ctrl=A('control')*Math.max(0,1-.55*B('team_control_resist')-.25*B('team_cleanse'));
+  const single=A('single_pressure')*Math.max(0,1-.33*pe.carryRes-.13*B('team_save'));
+  return clamp(.24*focus+.18*aoe+.18*pen+.12*counterSustain+.13*ctrl+.15*single,0,1);
 }
 // 0.23.0: базовое качество пятёрки считается только из её подтверждённых боевых возможностей.
 // Здесь нет личного Endgame Score и нет бонуса за более раннюю ульту.
@@ -2348,7 +2371,9 @@ function team5CoreQuality(e){
   const disruption=clamp(.52*A('control')+.28*A('energy_offense')+.20*A('dispel'),0,1);
   const support=clamp(.34*A('team_support')+.24*A('team_energy_support')+.18*A('team_sustain')+.16*A('team_save')+.08*A('team_cleanse'),0,1);
   const keyRes=clamp(.55*e.carryRes+.45*e.supportRes,0,1);
-  const mean=.34*offense+.28*defense+.18*disruption+.12*support+.08*keyRes;
+  // Не приравниваем объём нанесённого урона к выигранному бою: защита и
+  // сохранение главного атакующего/поддержки получают самостоятельный вес.
+  const mean=.30*offense+.30*defense+.17*disruption+.12*support+.11*keyRes;
   // Слабый фундамент нельзя полностью спрятать одной сверхсильной стороной состава.
   const floor=Math.min(offense,defense);
   const score=clamp(.86*mean+.14*floor,0,1);
@@ -2401,7 +2426,46 @@ function team5Matchup(a,b,preA=null,preB=null){
   const edge=clamp(parts.core+parts.scenarios+parts.interaction+parts.tempo,-1,1);
   return {edge,A,B,atkA,atkB,coreA,coreB,coreDiff,scenarioDiff,interactionDiff,tempoRealization,parts};
 }
-function team5EdgeLabel(edge){if(edge>=.12)return ['Сильное преимущество нашей пятёрки','good'];if(edge>=.045)return ['Преимущество нашей пятёрки','good'];if(edge>=.015)return ['Небольшое преимущество','good'];if(edge<=-.12)return ['Сильное преимущество противника','bad'];if(edge<=-.045)return ['Преимущество противника','bad'];if(edge<=-.015)return ['Противостояние близкое','bad'];return ['Противостояние близкое','mid']}
+// Пути к победе — читаемые объяснения уже существующих проверок 5×5.
+// Не подменяют основной результат и не используют сумму миллионов из статистики.
+function team5BattlePaths(own,opp,oe,pe){
+  const A=d=>oe.agg(d),B=d=>pe.agg(d);
+  const c=clamp, role=teRoleDisplay(oe,'carry'),help=teRoleDisplay(oe,'support');
+  const paths=[
+    {id:'focus',title:'Вывести из боя ключевую цель',
+     value:c((.53*A('single_pressure')+.31*A('focus')+.16*A('penetration'))*(1-.52*pe.supportRes-.20*B('team_save')),0,1),
+     when:'Давление по приоритетной цели должно обойти защиту и спасение союзников.',
+     who:role},
+    {id:'aoe',title:'Создать массовое давление',
+     value:c((.76*A('aoe_pressure')+.24*A('penetration'))*(1-.42*pe.avgRes-.23*B('team_sustain')-.16*B('team_save')),0,1),
+     when:'Массовые атаки дадут результат, если противник не успеет восстановить здоровье или спасти ключевых героев.',
+     who:role},
+    {id:'control',title:'Сорвать ключевые действия противника',
+     value:c((.58*A('control')+.42*A('energy_offense'))*(1-.48*B('team_control_resist')-.25*B('team_cleanse')-.22*B('self_energy_defense')),0,1),
+     when:'Контроль и вмешательство в энергию должны сработать до основных действий соперника.',
+     who:team5DriverNames(own,'control').concat(team5DriverNames(own,'energy_offense')).filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,2).join(' · ')},
+    {id:'endure',title:'Выдержать давление и победить в затяжном бою',
+     value:c((.30*A('team_sustain')+.23*A('team_save')+.17*oe.avgRes+.12*oe.carryRes+.18*A('sustained_tempo'))*(1-.47*B('antiheal')-.20*B('dispel')),0,1),
+     when:'Нужно сохранить основного атакующего и поддержку, не потеряв возможность завершить бой.',
+     who:help},
+    {id:'tempo',title:'Реализовать раннее окно',
+     value:c((.42*A('opening_tempo')+.33*A('single_pressure')+.25*A('control'))*(1-.35*B('team_save')-.30*B('team_control_resist')),0,1),
+     when:'Раннее действие полезно только при реальном давлении или срыве ответной способности; время ультимейта ориентировочное.',
+     who:role}
+  ];
+  // Для неустановленной стартовой энергии не называем раннее окно сильной стороной.
+  if(oe.timeline.unknown||pe.timeline.unknown)paths.find(x=>x.id==='tempo').value=0;
+  return paths.sort((a,b)=>b.value-a.value).slice(0,2);
+}
+function team5BattlePathsHtml(title,own,opp,oe,pe){
+  const paths=team5BattlePaths(own,opp,oe,pe).filter(p=>p.value>=.13);
+  return `<div><h3 class="team5SectionTitle">${esc(title)}</h3><div class="team5VersusStack">`+
+    (paths.length?paths.map(p=>`<div class="team5VersusFact"><b>${esc(p.title)}</b><p>${esc(p.when)}</p>`+
+      `${p.who?`<small>На кого опирается: ${esc(p.who)}.</small>`:''}</div>`).join(''):
+      '<div class="team5VersusFact">Выраженных условий победы по доступным механикам не обнаружено. Это не исключает победу в реальном бою.</div>')+
+    `</div></div>`;
+}
+function team5EdgeLabel(edge){if(edge>=.12)return ['Сильное преимущество нашей пятёрки','good'];if(edge>=.045)return ['Преимущество нашей пятёрки','good'];if(edge>=.02)return ['Небольшое преимущество','good'];if(edge<=-.12)return ['Сильное преимущество противника','bad'];if(edge<=-.045)return ['Преимущество противника','bad'];if(edge<=-.02)return ['Небольшое преимущество противника','bad'];return ['Противостояние близкое','mid']}
 
 function teamFoundation(t){
   if(!t.length)return {score:0,mean:0,weak:[],border:[],dead:[],label:"Нет данных"};
@@ -2665,7 +2729,7 @@ function renderVersus() {
   const core=coreDimensions.map(([label,key])=>({label,d:m.coreA[key]-m.coreB[key],a:m.coreA[key],b:m.coreB[key]}));
   const coreFacts=core.slice().sort((x,y)=>Math.abs(y.d)-Math.abs(x.d));
   const earlyGap=B.timeline.firstUlt-A.timeline.firstUlt;
-  const early=Math.abs(earlyGap)<=1.5||A.timeline.unknown||B.timeline.unknown?'Первое окно близкое или недостаточно данных':earlyGap>0?'У нашей пятёрки более ранний старт по эвристике':'У противника более ранний старт по эвристике';
+  const early=A.timeline.unknown||B.timeline.unknown?'Первое окно: недостаточно подтверждённых данных':Math.abs(earlyGap)<=1.5?'Первое окно близкое по модели':earlyGap>0?'У нашей пятёрки более ранний старт по эвристике':'У противника более ранний старт по эвристике';
   const signs=[['Фундамент пятёрок',m.parts.core],['11 сценариев без повтора старта',m.parts.scenarios],['Прямое взаимодействие',m.parts.interaction],['Реализация первого окна',m.parts.tempo]];
   const lead=signs.slice().sort((x,y)=>Math.abs(y[1])-Math.abs(x[1]))[0];
   const noPositive=interactions.positives.length===0,noRisk=interactions.risks.length===0;
@@ -2673,13 +2737,18 @@ function renderVersus() {
     <div class="team5Headline"><div><div class="team5Index">Сравнение пятёрок</div></div></div>
     <div class="team5EvidenceGrid">
       <div class="team5Evidence ${lab[1]==='good'?'good':lab[1]==='bad'?'bad':''}"><div class="eyebrow">Совокупное сравнение</div><h3>${esc(lab[0])}</h3><p>Сравнение ориентировочное: результат зависит от срабатывания способностей и действий противника.</p></div>
-      <div class="team5Evidence"><div class="eyebrow">Первое окно боя</div><h3>${esc(early)}</h3><p>У нас: ${esc(A.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. У противника: ${esc(B.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. Порядок применения ультимейтов в реальном бою может отличаться.</p></div>
+      <div class="team5Evidence"><div class="eyebrow">Первое окно боя</div><h3>${esc(early)}</h3><p>${A.timeline.unknown||B.timeline.unknown?'Точное ранжирование первых ультимейтов недоступно: стартовая энергия части персонажей не подтверждена.':`У нас: ${esc(A.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. У противника: ${esc(B.timeline.order.slice(0,2).map(x=>x.p.name).join(' · '))}. Порядок применения ультимейтов в реальном бою может отличаться.`}</p></div>
     </div>
     <h3 class="team5SectionTitle">Ключевые роли и их соперники</h3>
     <div class="team5EvidenceGrid">
       <div class="team5Evidence"><div class="eyebrow">Наше основное давление</div><h3>${esc(teRoleDisplay(A,'carry'))}</h3><p>Противоположное давление: ${esc(teRoleDisplay(B,'carry'))}.</p></div>
       <div class="team5Evidence"><div class="eyebrow">Наша ключевая поддержка</div><h3>${esc(teRoleDisplay(A,'support'))}</h3><p>Поддержка противника: ${esc(teRoleDisplay(B,'support'))}.</p></div>
     </div>
+    <div class="team5EvidenceGrid">
+      ${team5BattlePathsHtml('Как наш состав может добиться победы',a,b,A,B)}
+      ${team5BattlePathsHtml('Как противник может добиться победы',b,a,B,A)}
+    </div>
+    <div class="small" style="margin:2px 0 12px">Это возможные условия победы, а не шанс победить: итоговая статистика боёв не показывает, когда именно сработали лечение, контроль и спасение.</div>
     <h3 class="team5SectionTitle">Что показывает сравнение механик</h3>
     <div class="team5CoreGrid">${coreFacts.map(x=>team5VersusAxisItem(x.label,x.a,x.b)).join('')}</div>
 
