@@ -357,7 +357,15 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .threatField{font-size:12px;line-height:1.5;color:#c8d8e7;margin-top:5px;overflow-wrap:anywhere}
 .threatField b{color:#f0f5fc}
 .threatSource{font-size:10.5px;line-height:1.45;color:#99b0c5;margin-top:7px}
-.threatCheckBtn{display:block;width:100%;text-align:center;padding:10px 12px;min-height:44px;font-size:12.5px;line-height:1.4}
+.threatPlan{margin:10px 0 0;padding:10px 11px;border:1px solid #35485c;border-radius:11px;background:#111b27}
+.threatPlan.proven{border-left:3px solid #55c88a}.threatPlan.noProof{border-left:3px solid #73859a}.threatPlan.present{border-left:3px solid #e6a15b}
+.threatPlanKicker{font-size:10.5px;font-weight:850;letter-spacing:.03em;text-transform:uppercase;color:#9fb5c8;margin-bottom:6px}
+.threatPlanSwap{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12.5px;font-weight:850;color:#edf4fa}
+.threatPlanSwap .arrow{color:#9fb5c8}.threatPlanSwap .to{color:#9de2b9}.threatPlanPos{margin-top:5px;font-size:11.5px;font-weight:800;color:#b9d5ef}
+.threatPlanReason{margin-top:6px;font-size:11.5px;line-height:1.45;color:#bdcad6}.threatPlanActions{margin-top:8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.threatCheckBtn{display:inline-flex;width:auto;max-width:100%;align-items:center;justify-content:center;text-align:center;padding:6px 10px;min-height:34px;font-size:11.5px;line-height:1.25;border-radius:9px}
+.threatCheckBtn:disabled{opacity:.45;cursor:not-allowed}
+.threatCheckBtn.secondaryThreat{background:#172333;border-color:#41556a;color:#cfe1f0}
 .versusFocus{border:1px solid #35485c;background:#162334;border-radius:12px;margin-top:10px;padding:12px;font-size:13px;line-height:1.5}
 .versusFocus p{color:#d8e3ed;margin:8px 0}
 .versusFocus small{display:block;color:var(--muted);margin-top:8px}
@@ -716,7 +724,7 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
 .slotAvatar{display:grid;place-items:center;flex:none;width:41px;height:41px;background:#263649;border:1px solid #455d74;border-radius:13px;color:#fff0e0;font-size:21px;font-weight:900;box-shadow:inset 0 1px rgba(255,255,255,.09)}
 .slotHeroName{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-width:100%;height:34px;text-align:center;font-size:12px;line-height:1.4;font-weight:800;overflow-wrap:anywhere}
 .slotHeroSub{font-size:10px;line-height:1.2;color:#a9bace;font-weight:600;text-align:center}
-.slotInfo{position:absolute;right:4px;top:4px;min-height:27px;height:27px;width:27px;border-radius:50%;font-size:15px;background:#121c2bdf;z-index:1}
+.slotInfo{display:none!important}
 .slotInfo:disabled{display:none}
 .formationBoard .slotCard:focus-visible,.mainNavBtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .actions{margin-top:12px}
@@ -731,10 +739,10 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
 .mainNavBtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;border:1px solid transparent;color:#b2c2d3;font-size:12px;min-height:54px;padding:6px 8px;border-radius:11px}
 .mainNavBtn.active{background:linear-gradient(145deg,#fb8c38,#e76c1a);color:#19120d;box-shadow:0 3px 12px #ff7a1a27}
 .navIcon{font-size:19px;line-height:1.1}
-.tabs{scroll-margin-top:16px;display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 13px;padding-bottom:2px}
+.tabs{scroll-margin-top:16px;display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 13px;padding:3px 0 4px;align-items:center;justify-content:center}
 .tabs::-webkit-scrollbar{display:none}
 .tabs.solo{display:none}
-.tabs button{flex:0 0 auto;background:#192635;border-color:#33465a;font-size:13px;white-space:nowrap;min-height:39px}
+.tabs button{flex:0 0 auto;background:#192635;border-color:#33465a;font-size:13px;white-space:nowrap;min-height:39px;display:inline-flex;align-items:center;justify-content:center;line-height:1.2;margin:0}
 .tabs button.active{background:#31465e;color:#fff;border-color:#677d95}
 .tabs button[hidden]{display:none!important}
 .view.card{padding:16px}
@@ -767,7 +775,7 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
  .formationSlots{gap:6px}
  .view.card{padding:12px}
  .team5EvidenceGrid{grid-template-columns:1fr}
- .tabs{margin-top:2px}
+ .tabs{margin-top:6px;justify-content:center;padding-top:3px}
  .heroInfoPanel{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-width:355px){.mainNavBtn{font-size:10px}.slotHeroName{font-size:11px}.slotAvatar{width:33px;height:33px}}
@@ -898,7 +906,7 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
   <button class="active" data-view="teamprofile" type="button">Профиль пятёрки</button>
   <button data-view="synergy" type="button">Синергии</button>
   <button data-view="versus" type="button">Проверить 5×5</button>
-  <button data-view="threats" type="button">Угрозы</button>
+  <button data-view="threats" type="button">Контрмеры</button>
   <button data-view="replace" type="button">Кого заменить</button>
   <button data-view="proof" type="button">Почему?</button>
 </div>
@@ -916,8 +924,8 @@ body{background:radial-gradient(ellipse at 50% -80px,rgba(255,132,41,.09),transp
 </section>
 
 <section id="threats" class="view card">
-  <h2>Угрозы для моей пятёрки</h2>
-  <p class="threatLead">Персонажи, чьи способности могут помешать именно выбранному составу. Это не прогноз исхода боя.</p>
+  <h2>Контрмеры для моей пятёрки</h2>
+  <p class="threatLead">Контрмеры в выбранной пятёрке противника и варианты корректировки вашей команды. Состав соперника не изменяется.</p>
   <div id="badTargets" class="threatList"></div>
 </section>
 
@@ -2380,8 +2388,234 @@ function threatAnalysis(team,e){
   const priority=scenarios.reduce((v,x)=>v+x.score-(x.hasAnswer?.7:0),0);
   return {e,scenarios,primary,priority};
 }
+// Threat Engine answers only "who is dangerous and why".
+// The opponent is a FIXED condition of the task. We never optimize or change the enemy team here.
+// The plan below searches only for changes to OUR five that improve this exact 5x5 matchup.
+const THREAT_COUNTER_KEYS={
+  antiheal:['shield','damage_reduction','revive','death_save','team_save','invulnerable'],
+  control:['control_immunity','cleanse'],
+  energy:['energy_drain_immunity','energy_gain','cleanse'],
+  control_immunity:['true_damage','hp_percent_damage','defense_bypass','defense_break','fixed_damage'],
+  crit_resist:['true_damage','hp_percent_damage','fixed_damage'],
+  defense:['hp_percent_damage','true_damage','defense_bypass','defense_break','fixed_damage']
+};
+const THREAT_PLAN_CACHE=new Map();
+const THREAT_BASE_POOL_CACHE=new Map();
+const THREAT_VARIANT_CACHE=new Map();
+function threatSlotLabel(slot){
+  return slot<2?`Фронт · место ${slot+1}`:`Задний ряд · место ${slot-1}`;
+}
+function threatPlanSignature(team,enemy,item){
+  const sig=t=>t.map(p=>`${p.id}:${p.position}:${p.slot}`).join('|');
+  return `${sig(team)}>>${sig(enemy)}>>${item.e.id}:${item.primary.key}`;
+}
+function threatBasePoolSignature(team,enemy){
+  const sig=t=>t.map(p=>`${p.id}:${p.position}:${p.slot}`).join('|');
+  return `${sig(team)}>>${sig(enemy)}`;
+}
+function threatCounterKeysFor(primary){return THREAT_COUNTER_KEYS[primary?.key]||[]}
+function threatCounterScore(p,primary){
+  const keys=threatCounterKeysFor(primary);
+  if(!keys.length)return 0;
+  return keys.reduce((sum,k)=>sum+(hasP(p,k)?Math.max(1,mechanicWeight(k)):0),0);
+}
+function threatCounterLabels(p,primary){
+  return threatCounterKeysFor(primary).filter(k=>hasP(p,k)).map(k=>L[k]||replaceMechanicName(k)).slice(0,3);
+}
+function threatScenarioRisk(analysis,key){
+  const x=analysis?.scenarios?.find(s=>s.key===key);
+  if(!x)return 0;
+  return Math.max(0,x.score-(x.hasAnswer?.7:0));
+}
+function buildThreatOwnTeam(team,removeSlot,candidate,targetSlot){
+  const next=[...team].sort((a,b)=>a.slot-b.slot).map(p=>({...p}));
+  const removed=next[removeSlot];
+  if(!removed)return null;
+  const placed={...candidate,slot:targetSlot,position:targetSlot<2?'front':'back'};
+  let movedHero=null;
+  if(targetSlot===removeSlot){
+    next[removeSlot]=placed;
+  }else{
+    movedHero={...next[targetSlot],slot:removeSlot,position:removeSlot<2?'front':'back'};
+    next[removeSlot]=movedHero;
+    next[targetSlot]=placed;
+  }
+  return {next,removed,movedHero,placed};
+}
+function threatOwnPlanStructuralOk(base,nextEval,changes,matchGain){
+  const worst=Math.min(...nextEval.scenarios)-Math.min(...base.scenarios);
+  const scenarioCollapse=TEAM_SCENARIOS.filter((_,i)=>base.scenarios[i]>=.27&&nextEval.scenarios[i]<.22).length;
+  const offenseDrop=base.offense.combined-nextEval.offense.combined;
+  const carryDrop=base.carryRes-nextEval.carryRes;
+  const supportDrop=base.supportRes-nextEval.supportRes;
+  const lostWeight=sumMechanicWeight(changes.lost),gainedWeight=sumMechanicWeight(changes.gained);
+  const criticalLoss=changes.lost.some(k=>['limbo','death_save','team_save','revive','invulnerable','energy_drain_immunity','control_immunity','signature_mass_ultimate','signature_opening_ultimate'].includes(k));
+  if(matchGain<.018)return false;
+  if(worst<-.035||scenarioCollapse>0)return false;
+  if(offenseDrop>.065||carryDrop>.07||supportDrop>.085)return false;
+  if(nextEval.unmet>base.unmet+1)return false;
+  if(criticalLoss&&gainedWeight+1<lostWeight&&matchGain<.07)return false;
+  return true;
+}
+// Лёгкий общий пул: здесь больше нет сотен полных 5×5-расчётов.
+// Сначала строятся только варианты состава и механические изменения; тяжёлый 5×5
+// запускается позже лишь для кандидатов, которые действительно могут быть контрмерой.
+function threatOwnBasePool(team,enemy){
+  const key=threatBasePoolSignature(team,enemy);
+  if(THREAT_BASE_POOL_CACHE.has(key))return THREAT_BASE_POOL_CACHE.get(key);
+  const base=team5Eval(team),enemyEval=team5Eval(enemy);
+  const baseMatch=base&&enemyEval?team5Matchup(team,enemy,base,enemyEval):null;
+  if(!base||!enemyEval||!baseMatch)return null;
+  const ids=new Set(team.map(p=>String(p.id)));
+  const rows=[];
+  for(let removeSlot=0;removeSlot<5;removeSlot++){
+    const old=team.find(p=>p.slot===removeSlot);if(!old)continue;
+    for(const c of P){
+      if(ids.has(String(c.id))||!teBaseHero(c))continue;
+      const built=buildThreatOwnTeam(team,removeSlot,c,removeSlot);if(!built)continue;
+      const changes=replacementMechanicDiff(team,removeSlot,built.placed);
+      rows.push({candidate:c,removed:old,removeSlot,targetSlot:removeSlot,next:built.next,placed:built.placed,movedHero:null,changes});
+    }
+  }
+  const result={key,base,enemyEval,baseMatch,rows};
+  if(THREAT_BASE_POOL_CACHE.size>16)THREAT_BASE_POOL_CACHE.clear();
+  THREAT_BASE_POOL_CACHE.set(key,result);
+  return result;
+}
+function threatOwnCandidateScore(row,item,beforeRisk){
+  const afterThreat=threatAnalysis(row.next,item.e);
+  const afterRisk=threatScenarioRisk(afterThreat,item.primary.key);
+  const riskReduction=beforeRisk-afterRisk;
+  const counterBefore=threatCounterScore(row.removed,item.primary);
+  const counterAfter=threatCounterScore(row.placed,item.primary);
+  const counterGain=counterAfter-counterBefore;
+  const removedAffected=(item.primary.affected||[]).some(p=>String(p.id)===String(row.removed.id));
+  const directCounter=threatCounterLabels(row.placed,item.primary);
+  const powerDelta=(Number(row.candidate.endgamePower||0)-Number(row.removed.endgamePower||0));
+  const mechanicDelta=sumMechanicWeight(row.changes.gained)-sumMechanicWeight(row.changes.lost);
+  // Жёсткое правило достоверности: кандидат, усиливающий именно заявленную угрозу,
+  // даже не попадает в тяжёлый расчёт 5×5.
+  const threatWorse=afterRisk>beforeRisk+1e-9;
+  const relevant=!threatWorse&&(riskReduction>1e-9||counterGain>1e-9);
+  const shortlistScore=riskReduction*9+Math.max(0,counterGain)*2.1+
+    (removedAffected?.35:0)+Math.max(-12,Math.min(12,powerDelta))*.035+
+    Math.max(-3,Math.min(3,mechanicDelta))*.12;
+  return {...row,afterRisk,riskReduction,counterGain,directCounter,removedAffected,shortlistScore,threatWorse,relevant};
+}
+function threatVariantEval(next,enemy,enemyEval){
+  const ts=next.map(p=>`${p.id}:${p.position}:${p.slot}`).join('|');
+  const es=enemy.map(p=>`${p.id}:${p.position}:${p.slot}`).join('|');
+  const key=`${ts}>>${es}`;
+  if(THREAT_VARIANT_CACHE.has(key))return THREAT_VARIANT_CACHE.get(key);
+  const ne=team5Eval(next);
+  const nm=ne?team5Matchup(next,enemy,ne,enemyEval):null;
+  const out=ne&&nm?{ne,nm}:null;
+  if(THREAT_VARIANT_CACHE.size>320)THREAT_VARIANT_CACHE.clear();
+  THREAT_VARIANT_CACHE.set(key,out);
+  return out;
+}
+function threatOwnReplacementPlan(team,enemy,item){
+  if(team.length!==5)return {state:'need-own'};
+  if(enemy.length!==5)return {state:'need-enemy'};
+  if(!enemy.some(p=>String(p.id)===String(item.e.id)))return {state:'stale'};
+
+  const cacheKey=threatPlanSignature(team,enemy,item);
+  if(THREAT_PLAN_CACHE.has(cacheKey))return THREAT_PLAN_CACHE.get(cacheKey);
+
+  const pool=threatOwnBasePool(team,enemy);
+  if(!pool)return {state:'unavailable'};
+  const {base,enemyEval,baseMatch,rows}=pool;
+  const beforeRisk=threatScenarioRisk(item,item.primary.key);
+
+  // Сначала дешёвая причинная фильтрация. В полный 5×5 попадают только герои,
+  // которые реально снижают эту угрозу или добавляют новый ответ, не усиливая её.
+  const shortlist=rows.map(row=>threatOwnCandidateScore(row,item,beforeRisk))
+    .filter(row=>row.relevant)
+    .sort((a,b)=>b.shortlistScore-a.shortlistScore)
+    .slice(0,8);
+
+  let best=null;
+  for(const seed of shortlist){
+    for(let targetSlot=0;targetSlot<5;targetSlot++){
+      const built=buildThreatOwnTeam(team,seed.removeSlot,seed.candidate,targetSlot);if(!built)continue;
+      const nt=built.next;
+
+      // Причинная проверка выполняется ДО тяжёлого 5×5.
+      const afterThreat=threatAnalysis(nt,item.e);
+      const afterRisk=threatScenarioRisk(afterThreat,item.primary.key);
+      const riskReduction=beforeRisk-afterRisk;
+      if(afterRisk>beforeRisk+1e-9)continue; // конкретная угроза стала сильнее — запрет без исключений
+
+      const counterBefore=threatCounterScore(seed.removed,item.primary);
+      const counterAfter=threatCounterScore(built.placed,item.primary);
+      const counterGain=counterAfter-counterBefore;
+      const threatReduced=riskReduction>=.45||(afterRisk===0&&beforeRisk>0);
+      const answerAdded=!threatReduced&&counterGain>1e-9;
+      if(!threatReduced&&!answerAdded)continue; // общего улучшения 5×5 недостаточно
+
+      const variant=threatVariantEval(nt,enemy,enemyEval);if(!variant)continue;
+      const {ne,nm}=variant;
+      const matchGain=nm.edge-baseMatch.edge;
+      const changes=replacementMechanicDiff(team,seed.removeSlot,built.placed);
+      if(!threatOwnPlanStructuralOk(base,ne,changes,matchGain))continue;
+
+      // Если сама угроза не уменьшилась, а лишь появился дополнительный ответ,
+      // требуем более заметного улучшения матча — это более слабое доказательство.
+      if(threatReduced){
+        if(matchGain<.025&&riskReduction<1.2)continue;
+      }else{
+        if(matchGain<.04)continue;
+      }
+
+      const directCounter=threatCounterLabels(built.placed,item.primary);
+      const removedAffected=(item.primary.affected||[]).some(p=>String(p.id)===String(seed.removed.id));
+      const scenarioGain=TEAM_SCENARIOS.filter((_,i)=>ne.scenarios[i]-base.scenarios[i]>.025).length;
+      const overallDelta=ne.overall-base.overall;
+      const effectMode=threatReduced?'reduced':'answer';
+      const score=matchGain*180+riskReduction*2.8+Math.max(-.04,overallDelta)*55+
+        Math.max(0,counterGain)*.35+scenarioGain*.18+(removedAffected?.30:0)-(targetSlot!==seed.removeSlot?.08:0);
+      const row={state:'recommended',effectMode,enemyId:item.e.id,candidate:seed.candidate,removed:seed.removed,removeSlot:seed.removeSlot,targetSlot,
+        position:threatSlotLabel(targetSlot),movedHero:built.movedHero,matchGain,riskReduction,counterGain,directCounter,
+        overallDelta,changes,score,beforeRisk,afterRisk};
+      if(!best||row.score>best.score)best=row;
+    }
+  }
+
+  let result;
+  if(best)result=best;
+  else result={state:'keep',reason:'Ни одна проверенная замена не улучшила это конкретное 5×5 и одновременно не снизила влияние этой угрозы или не добавила новый ответ на неё без заметной потери структуры вашей пятёрки.'};
+  if(THREAT_PLAN_CACHE.size>250)THREAT_PLAN_CACHE.clear();
+  THREAT_PLAN_CACHE.set(cacheKey,result);
+  return result;
+}
+function threatPlanHTML(item,plan){
+  const primary=item.primary;
+  if(plan.state==='loading'){
+    return `<div class="threatPlan noProof"><div class="threatPlanKicker">Подбираем контрмеру…</div></div>`;
+  }
+  if(plan.state==='recommended'){
+    let why=plan.effectMode==='answer'
+      ?'Сама угроза не усиливается, при этом появляется дополнительный ответ на неё и улучшается именно текущее противостояние 5×5.'
+      :'Снижает влияние этой угрозы и улучшает именно текущее противостояние 5×5 без выявленной критической потери структуры.';
+    if(plan.directCounter?.length)why=`Добавляет ответ: ${plan.directCounter.join(', ')}. ${why}`;
+    else if(plan.afterRisk===0&&plan.beforeRisk>0)why=`Убирает зависимость, которой пользуется эта угроза. ${why}`;
+    const moved=plan.movedHero?`<div class="threatPlanReason">При перестановке ${esc(selectorName(plan.movedHero))} перейдёт на ${esc(threatSlotLabel(plan.removeSlot))}.</div>`:'';
+    return `<div class="threatPlan proven"><div class="threatPlanKicker">Рекомендуемая корректировка нашей пятёрки</div>`+
+      `<div class="threatPlanSwap"><span>${esc(selectorName(plan.removed))}</span><span class="arrow">→</span><span class="to">${esc(selectorName(plan.candidate))}</span></div>`+
+      `<div class="threatPlanPos">${esc(plan.position)}</div>`+
+      `<div class="threatPlanReason">${esc(why)}</div>${moved}`+
+      `<div class="threatPlanActions"><button type="button" class="threatCheckBtn" data-threat-own-apply="${esc(plan.candidate.id)}" data-threat-enemy="${esc(item.e.id)}" data-threat-remove-slot="${plan.removeSlot}" data-threat-target-slot="${plan.targetSlot}">Применить замену</button></div></div>`;
+  }
+  if(plan.state==='keep'){
+    return `<div class="threatPlan noProof"><div class="threatPlanKicker">Менять состав ради этой угрозы не требуется</div><div class="threatPlanReason">${esc(plan.reason)}</div></div>`;
+  }
+  if(plan.state==='need-enemy'){
+    return `<div class="threatPlan noProof"><div class="threatPlanKicker">Сначала собери противника 5/5</div><div class="threatPlanReason">После этого калькулятор зафиксирует его пятёрку и будет искать изменения только в вашем составе.</div><div class="threatPlanActions"><button type="button" class="threatCheckBtn secondaryThreat" data-threat-open="1">Открыть 5×5</button></div></div>`;
+  }
+  return '';
+}
 function threatCardHTML(item){
-  const {e,scenarios,primary}=item;
+  const {e,scenarios,primary,plan}=item;
   const src=heroPortraitSrc(e);
   const icon=src?`<img loading="lazy" decoding="async" src="${src}" alt="">`:esc(heroMark(e));
   const blocks=scenarios.map((x,i)=>`<div class="threatMechanic${i===0?' primary':''}">
@@ -2394,33 +2628,73 @@ function threatCardHTML(item){
   return `<article class="threatCard">
     <div class="threatHeroHead"><div class="threatPortrait">${icon}</div><div class="threatHeroText"><h3>${esc(selectorName(e))}</h3><div class="threatMainLabel">${esc(primary.title)}</div></div></div>
     <div class="threatSummary">${esc(primary.why)}</div>
-    <details class="threatDetails"><summary>Кого затрагивает и чем ответить${scenarios.length>1?` · ${scenarios.length} механики`:''}</summary><div class="threatDetailsBody">${blocks}</div></details>
-    <button type="button" class="threatCheckBtn" data-threat-id="${esc(e.id)}">⚔ Проверить против ${esc(selectorName(e))}</button>
+    <details class="threatDetails"><summary>Почему это угроза${scenarios.length>1?` · ${scenarios.length} механики`:''}</summary><div class="threatDetailsBody">${blocks}</div></details>
+    <div id="threatPlan_${esc(e.id)}">${threatPlanHTML(item,plan)}</div>
   </article>`;
 }
+let THREAT_RENDER_TOKEN=0;
 function renderThreats(){
   const node=$('badTargets');if(!node)return;
-  const team=getTeam('team');
-  if(team.length!==5){node.innerHTML='<div class="mutedblock">Сначала собери свою пятёрку. Угрозы рассчитываются по составу целиком.</div>';return;}
-  const all=pool().map(e=>threatAnalysis(team,e)).filter(Boolean).sort((a,b)=>b.priority-a.priority);
-  // Сначала разные типы проблем, затем оставшиеся по контексту, всего до пяти персонажей.
-  const selected=[],seenIds=new Set(),used=new Set();
-  for(const item of all){if(!used.has(item.primary.key)){selected.push(item);used.add(item.primary.key);seenIds.add(item.e.id);}if(selected.length>=5)break;}
-  for(const item of all){if(selected.length>=5)break;if(!seenIds.has(item.e.id)){selected.push(item);seenIds.add(item.e.id);}}
-  node.innerHTML=selected.length?selected.map(threatCardHTML).join(''):'<div class="mutedblock">По текущим правилам нет явных адресных угроз. Это не означает, что команда неуязвима.</div>';
+  const team=getTeam('team'),enemy=getTeam('enemy');
+  const token=++THREAT_RENDER_TOKEN;
+  if(team.length!==5){node.innerHTML='<div class="mutedblock">Сначала собери свою пятёрку. Контрмеры рассчитываются по составу целиком.</div>';return;}
+  if(enemy.length!==5){node.innerHTML='<div class="mutedblock">Собери пятёрку противника 5/5. После этого состав соперника фиксируется, а калькулятор ищет варианты только для вашей команды.</div>';return;}
+
+  // Only heroes actually selected in the enemy five can be threats here.
+  const all=enemy.map(e=>threatAnalysis(team,e)).filter(Boolean).sort((a,b)=>b.priority-a.priority);
+  const selected=[],used=new Set();
+  for(const item of all){if(!used.has(item.primary.key)){selected.push(item);used.add(item.primary.key);}if(selected.length>=5)break;}
+  for(const item of all){if(selected.length>=5)break;if(!selected.some(x=>x.e.id===item.e.id))selected.push(item);}
+  if(!selected.length){node.innerHTML='<div class="mutedblock">В выбранной пятёрке противника не найдено явных адресных угроз по текущим правилам. Это не означает, что бой будет лёгким.</div>';return;}
+
+  const pending=[];
+  const enriched=selected.map(item=>{
+    const key=threatPlanSignature(team,enemy,item);
+    const cached=THREAT_PLAN_CACHE.get(key);
+    if(!cached)pending.push(item);
+    return {...item,plan:cached||{state:'loading'}};
+  });
+  node.innerHTML=enriched.map(threatCardHTML).join('');
+  if(!pending.length)return;
+
+  const stateSig=threatBasePoolSignature(team,enemy);
+  let i=0;
+  const runNext=()=>{
+    if(token!==THREAT_RENDER_TOKEN)return;
+    const nowTeam=getTeam('team'),nowEnemy=getTeam('enemy');
+    if(nowTeam.length!==5||nowEnemy.length!==5||threatBasePoolSignature(nowTeam,nowEnemy)!==stateSig)return;
+    const item=pending[i++];if(!item)return;
+    const plan=threatOwnReplacementPlan(team,enemy,item);
+    if(token!==THREAT_RENDER_TOKEN)return;
+    const host=$('threatPlan_'+item.e.id);
+    if(host)host.innerHTML=threatPlanHTML(item,plan);
+    if(i<pending.length)setTimeout(runNext,0);
+  };
+  setTimeout(runNext,0);
 }
 let threatFocusId="";
-function focusThreatInVersus(id){
-  const e=byId[id];if(!e||!ACTIVE_IDS.has(String(id)))return;
-  threatFocusId=String(id);
-  const slots=Array.from({length:5},(_,i)=>$('enemy'+i));
-  let index=slots.findIndex(sel=>sel.value===String(id));
-  if(index<0){index=slots.findIndex(sel=>!sel.value);if(index<0)index=0;
-    slots[index].value=String(id);
-    slots[index].dispatchEvent(new Event('change',{bubbles:true}));
+function openThreatVersus(){switchView('versus',true)}
+function applyThreatOwnReplacement(candidateId,enemyId,removeSlot,targetSlot){
+  const candidate=byId[candidateId],enemyHero=byId[enemyId];
+  removeSlot=Number(removeSlot);targetSlot=Number(targetSlot);
+  if(!candidate||!enemyHero||!Number.isInteger(removeSlot)||!Number.isInteger(targetSlot))return;
+  const team=getTeam('team'),enemy=getTeam('enemy');
+  const item=threatAnalysis(team,enemyHero);
+  const plan=item?threatOwnReplacementPlan(team,enemy,item):null;
+  if(!plan||plan.state!=='recommended'||String(plan.candidate.id)!==String(candidateId)||plan.removeSlot!==removeSlot||plan.targetSlot!==targetSlot){
+    THREAT_PLAN_CACHE.clear();deferredViewDirty.add('threats');refreshDeferredView('threats');showToast('Состав изменился — рекомендация пересчитана');return;
   }
+  if(targetSlot===removeSlot){
+    $('team'+removeSlot).value=String(candidateId);
+  }else{
+    const movedId=$('team'+targetSlot).value;
+    $('team'+removeSlot).value=movedId;
+    $('team'+targetSlot).value=String(candidateId);
+  }
+  THREAT_PLAN_CACHE.clear();THREAT_BASE_POOL_CACHE.clear();THREAT_VARIANT_CACHE.clear();
+  recalc();
   switchView('versus',true);
-  showToast('Добавлен противник: '+selectorName(e));
+  showToast(`Замена применена: ${selectorName(plan.removed)} → ${selectorName(candidate)}`);
 }
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -3252,7 +3526,7 @@ function renderVersus() {
         <h4>Ключевые условия</h4>${team5CompactConditionsHtml(a,b,A,B,m.edge)}
         <h4>Сценарии боя</h4><ul class="team5ExtraScenarios">${scenarioDetails}</ul>
         <h4>Наши ответы</h4>${groupedDetail(positives,'good')}
-        <h4>Угрозы противника</h4>${groupedDetail(risks,'bad')}
+        <h4>Контрмеры противника</h4>${groupedDetail(risks,'bad')}
         <h4>Первое окно боя</h4><p class="team5QuickEmpty">${esc(early)}. ${A.timeline.unknown||B.timeline.unknown?'Данных для точной очередности первых ультимейтов недостаточно.':'Порядок действий в реальном бою может отличаться.'}</p>
       </div>
     </details>`;
@@ -3748,8 +4022,8 @@ function recalc(){
   if(enemyChanged)refreshSlotCards("enemy");
   if(cleaned)setTimeout(()=>showToast("Кормовой персонаж или дубль удалён из состава"),30);
   if(teamChanged){renderPositionNotes();renderSummary();}
-  if(teamChanged){deferredViewDirty=new Set(DEFERRED_VIEWS);}
-  else if(enemyChanged){deferredViewDirty.add('versus');deferredViewDirty.add('replace');}
+  if(teamChanged){THREAT_RENDER_TOKEN++;deferredViewDirty=new Set(DEFERRED_VIEWS);THREAT_PLAN_CACHE.clear();THREAT_BASE_POOL_CACHE.clear();THREAT_VARIANT_CACHE.clear();}
+  else if(enemyChanged){THREAT_RENDER_TOKEN++;deferredViewDirty.add('versus');deferredViewDirty.add('threats');deferredViewDirty.add('replace');THREAT_PLAN_CACHE.clear();THREAT_BASE_POOL_CACHE.clear();THREAT_VARIANT_CACHE.clear();}
   refreshDeferredView(activeViewId());
   LAST_TEAM_UI_SIG=teamSig;LAST_ENEMY_UI_SIG=enemySig;
   saveState(false);
@@ -3770,10 +4044,11 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
  tgHaptic('light');switchView(b.dataset.view,false);
 }));
 $('badTargets').addEventListener('click',e=>{
-  const btn=e.target.closest('[data-threat-id]');
-  if(btn){tgHaptic('light');focusThreatInVersus(btn.dataset.threatId);}
+  const apply=e.target.closest('[data-threat-own-apply]');
+  if(apply){tgHaptic('medium');applyThreatOwnReplacement(apply.dataset.threatOwnApply,apply.dataset.threatEnemy,Number(apply.dataset.threatRemoveSlot),Number(apply.dataset.threatTargetSlot));return;}
+  const open=e.target.closest('[data-threat-open]');
+  if(open){tgHaptic('light');openThreatVersus();}
 });
-
 $('heroSearchClose').addEventListener('click',closeHeroSearch);
 $('heroSearchOverlay').addEventListener('click',e=>{if(e.target===$('heroSearchOverlay'))closeHeroSearch()});
 let heroSearchInputTimer=0;
