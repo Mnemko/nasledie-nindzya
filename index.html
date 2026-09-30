@@ -519,6 +519,41 @@ body.tg-miniapp .tgBuildBadge{display:flex}
   box-shadow:0 0 0 1px rgba(224,107,116,.18) inset,0 0 16px rgba(170,58,70,.08)!important;
 }
 .team5QuickHead.bad.strong b{color:#ffd0d4!important}
+
+/* v3.31 — финальная UX-полировка профиля и угроз */
+#strengths{align-items:flex-start}
+.featureMore{display:inline-block;vertical-align:top;margin:0}
+.featureMore>summary{list-style:none;display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid rgba(93,167,111,.42);border-radius:7px;background:rgba(35,75,45,.26);color:#9fe6ad;font-size:10.5px;font-weight:800;cursor:pointer;user-select:none}
+.featureMore>summary::-webkit-details-marker{display:none}
+.featureMore[open]>summary{margin-bottom:6px}
+.featureMoreBadges{display:flex;flex-wrap:wrap;gap:5px;max-width:100%}
+
+.threatList{gap:8px}
+.threatCard{padding:9px 10px;border-radius:12px}
+.threatHeroHead{gap:9px}
+.threatPortrait{width:46px;height:46px;flex:0 0 46px;border-radius:10px}
+.threatHeroText h3{font-size:13px;line-height:1.2;margin-bottom:2px}
+.threatMainLabel{font-size:10.5px;line-height:1.25}
+.threatSummary{font-size:11.5px;line-height:1.35;margin:6px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.threatDetails{margin:6px 0 7px;border-radius:8px}
+.threatDetails>summary{padding:6px 8px;font-size:10.5px;line-height:1.25}
+.threatDetailsBody{padding:0 8px 8px;gap:7px}
+.threatMechanic{padding:7px 8px;border-radius:8px}
+.threatMechanicHead{font-size:11px}
+.threatMechanic p,.threatField,.threatSource{font-size:10.5px;line-height:1.35}
+.threatCheckBtn{padding:6px 9px;min-height:30px;font-size:10.5px;border-radius:8px;margin-top:0}
+@media(max-width:520px){
+  .threatCard{padding:8px}
+  .threatPortrait{width:44px;height:44px;flex-basis:44px}
+  .threatHeroText h3{font-size:12.5px}
+  .threatSummary{font-size:11px}
+  .threatCheckBtn{min-height:32px;font-size:10.5px}
+}
+
+@media(max-width:520px){
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .actions button{min-height:38px;width:100%}
+}
 </style>
 
 <style>
@@ -1309,6 +1344,20 @@ body{
 }
 </style>
 
+
+<style id="profile-unified-v335">
+#teamprofile>h2{margin:0 0 10px;font-size:18px;line-height:1.25;color:#eef5fb}
+#teamprofile .profileSummary{margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(112,139,163,.22);gap:9px}
+#teamprofile .profileSummary .box{background:linear-gradient(180deg,rgba(17,28,39,.72),rgba(13,22,31,.72));box-shadow:none;border-color:rgba(75,101,124,.46);padding:11px 12px}
+#teamprofile .profileSummary .box h2{font-size:14px;margin-bottom:7px}
+#teamprofile .profileSummary .badge{font-size:10.8px;padding:4px 7px}
+#teamprofile .profileSummary .row{padding:8px 9px}
+#teamprofile .profileSummary .reason{font-size:11px;line-height:1.4}
+@media(max-width:650px){
+  #teamprofile>h2{font-size:17px;margin-bottom:8px}
+  #teamprofile .profileSummary{grid-template-columns:1fr;padding-top:10px;margin-top:10px}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -1347,25 +1396,11 @@ body{
   <div id="positionNotes" class="positionNotes"></div>
 </section>
 
-<section class="summary" id="teamSummary">
-  <div class="box">
-    <h2><span class="summaryEmoji">✦</span> Возможности состава</h2>
-    <div id="status" class="status">Выбери персонажей</div>
-    <div id="coverage" hidden></div>
-    <div id="strengths" class="badges"></div>
-  </div>
-  <div class="box">
-    <h2><span class="summaryEmoji">!</span> Слабые места состава</h2>
-    <div id="weaknesses" class="rows"></div>
-  </div>
-</section>
-
 <nav class="mainNav" aria-label="Основные разделы">
   <button type="button" class="mainNavBtn active" data-group="team" aria-label="Мой состав"><span class="navIcon">◈</span><span>Мой состав</span></button>
   <button type="button" class="mainNavBtn" data-group="pvp" aria-label="ПвП"><span class="navIcon">⚔</span><span>ПвП 5×5</span></button>
   <button type="button" class="mainNavBtn" data-group="replace" aria-label="Замены"><span class="navIcon">⇄</span><span>Замены</span></button>
   <button type="button" class="mainNavBtn" data-group="tier" aria-label="Эндгейм тир-лист"><span class="navIcon">★</span><span>Тир</span></button>
-  <button type="button" class="mainNavBtn" data-group="proof" aria-label="Подробнее"><span class="navIcon">ⓘ</span><span>Подробнее</span></button>
 </nav>
 <div class="tabs" aria-label="Подразделы">
   <button class="active" data-view="teamprofile" type="button">Профиль пятёрки</button>
@@ -1374,12 +1409,22 @@ body{
   <button data-view="threats" type="button">Угрозы</button>
   <button data-view="replace" type="button">Кого заменить</button>
   <button data-view="tierlist" type="button">Тир-лист</button>
-  <button data-view="proof" type="button">Почему?</button>
 </div>
 
 
 <section id="teamprofile" class="view active card">
-  <h2></h2>
+  <section class="summary profileSummary" id="teamSummary">
+    <div class="box">
+      <h2><span class="summaryEmoji">✦</span> Возможности состава</h2>
+      <div id="status" class="status">Выбери персонажей</div>
+      <div id="coverage" hidden></div>
+      <div id="strengths" class="badges"></div>
+    </div>
+    <div class="box">
+      <h2><span class="summaryEmoji">!</span> Слабые места состава</h2>
+      <div id="weaknesses" class="rows"></div>
+    </div>
+  </section>
   <div id="teamProfileResult"></div>
 </section>
 
@@ -1486,7 +1531,7 @@ function tgHaptic(kind="light") {
 }
 
 
-const TEST_VERSION = "3.30-weakness-text-clean";
+const TEST_VERSION = "3.38-profile-cleanup";
 const STORAGE_KEY = "nasledie_nindzya_state_v0151";
 let saveHintTimer = null;
 let toastTimer = null;
@@ -1523,7 +1568,7 @@ function switchView(view,scroll=false){
   });
   const subtabs=document.querySelector('.tabs');if(subtabs)subtabs.classList.toggle('solo',NAV_GROUPS[group].length===1);
   const teamSummary=document.getElementById('teamSummary');
-  if(teamSummary)teamSummary.hidden=(group==='pvp');
+  if(teamSummary)teamSummary.hidden=(group==='pvp'||group==='replace'||group==='tier');
   saveState(false);
   // During state restoration the battle model has not finished initializing yet.
   if(typeof appDeferredReady!=="undefined"&&appDeferredReady)refreshDeferredView(view);
@@ -2741,7 +2786,7 @@ function weaknesses(t) {
   // Не дублируем близкие формулировки и сначала оставляем самые явные провалы.
   const seen=new Set(),out=[];
   for(const x of r){const k=x[0];if(seen.has(k))continue;seen.add(k);out.push(x)}
-  return out.slice(0,5);
+  return out.slice(0,3);
 }
 
 function featureList(t) {
@@ -2856,7 +2901,18 @@ function renderSummary() {
   }
   $("status").textContent=t.length===5?"":`Выбрано персонажей: ${t.length}/5`;
   $("coverage").textContent="";
-  $("strengths").innerHTML=featureList(t).map(k=>`<span class="badge good">${esc(L[k]||k)}</span>`).join("") || '<span class="small">Подтверждённых ключевых механик пока не найдено.</span>';
+  const features=featureList(t);
+  const shownFeatures=features.slice(0,7);
+  const hiddenFeatures=features.slice(7);
+  $("strengths").innerHTML=features.length
+    ? shownFeatures.map(k=>`<span class="badge good">${esc(L[k]||k)}</span>`).join("")+
+      (hiddenFeatures.length?`<details class="featureMore"><summary>Ещё ${hiddenFeatures.length}</summary><div class="featureMoreBadges">${hiddenFeatures.map(k=>`<span class="badge good">${esc(L[k]||k)}</span>`).join("")}</div></details>`:'')
+    : '<span class="small">Подтверждённых ключевых механик пока не найдено.</span>';
+  if(t.length<5){
+    const left=5-t.length;
+    $("weaknesses").innerHTML=`<div class="mutedblock"><b>Состав не заполнен</b><div class="reason">Добавь ещё ${left} ${left===1?'персонажа':left<5?'персонажей':'персонажей'}, чтобы оценить слабые места пятёрки.</div></div>`;
+    return;
+  }
   const w=weaknesses(t);
   $("weaknesses").innerHTML=w.length?w.map(x=>`<div class="row"><b>${esc(x[0])}</b><div class="reason">${esc(x[1])}</div></div>`).join(""):'<div class="row"><b>Явных дыр по базовым механикам не найдено</b><div class="reason">Дальше важны конкретный противник и реальные боевые тайминги.</div></div>';
 }
@@ -3092,7 +3148,7 @@ function threatCardHTML(item,team){
   return `<article class="threatCard">
     <div class="threatHeroHead"><div class="threatPortrait">${icon}</div><div class="threatHeroText"><h3>${esc(selectorName(e))}</h3><div class="threatMainLabel">${esc(primary.title)}</div></div></div>
     <div class="threatSummary">${esc(primary.why)}</div>
-    <details class="threatDetails"><summary>Кого затрагивает и чем ответить${scenarios.length>1?` · ${scenarios.length} механики`:''}</summary><div class="threatDetailsBody">${blocks}</div></details>
+    <details class="threatDetails"><summary>Подробнее${scenarios.length>1?` · ${scenarios.length} механики`:''}</summary><div class="threatDetailsBody">${blocks}</div></details>
     <button type="button" class="threatCheckBtn" data-threat-id="${esc(e.id)}" data-threat-slot="${plan.index}">${esc(buttonText)}</button>
   </article>`;
 }
@@ -3587,9 +3643,7 @@ function renderTeamProfile(){
   const early=e.timeline.unknown?'Порядок не подтверждён':e.timeline.order.slice(0,2).map(x=>x.p.name).join(' · ');
   const tm=e.timeline.unknown?`Для ${e.timeline.unknown} персонаж(ей) в базе нет подтверждённого стартового значения энергии; порядок ульт ориентировочный.`:'Порядок первых ульт — расчётный ориентир, не запись реального боя.';
   root.innerHTML=`
-    <div class="team5Headline"><div><div class="team5Index">Возможности пятёрки</div></div><span class="team5Label ${lab[1]}">${lab[0]}</span></div>
-    <h3 class="team5SectionTitle"></h3>
-
+    <div class="team5Headline"><div><div class="team5Index">Оценка пятёрки</div></div>${lab[0]?`<span class="team5Label ${lab[1]}">${esc(lab[0])}</span>`:''}</div>
     <div class="team5CoreGrid">
       ${team5AxisItem('Давление',core.offense,teRoleDisplay(e,'carry'))}
       ${team5AxisItem('Защита',core.defense,team5DriverNames(t,'team_sustain').concat(team5DriverNames(t,'team_save')).filter((n,i,a)=>a.indexOf(n)===i).slice(0,3).join(' · '))}
@@ -4706,6 +4760,7 @@ function recalc(){
 }
 if($("rare5"))$("rare5").addEventListener("change",()=>{recalc();showSavedHint()});
 $("clear").addEventListener("click",()=>{tgHaptic("medium");for(let i=0;i<5;i++)$("team"+i).value="";recalc();showSavedHint()});
+
 $("example").addEventListener("click",()=>{tgHaptic("medium");
  const names=["Мадара Учиха — Шесть Путей","Цунаде Сенджу — Режим Бьякуго","Сэндзю Хаширама — Режим Мудреца","Шисуи Учиха — Сусаноо","Учиха Саске — Риннеган"];
  names.forEach((n,i)=>{const p=P.find(x=>x.name===n);if(p)$("team"+i).value=p.id});recalc();showSavedHint();
