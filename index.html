@@ -357,7 +357,7 @@ body.tg-miniapp .tgBuildBadge{display:flex}
 .threatField{font-size:12px;line-height:1.5;color:#c8d8e7;margin-top:5px;overflow-wrap:anywhere}
 .threatField b{color:#f0f5fc}
 .threatSource{font-size:10.5px;line-height:1.45;color:#99b0c5;margin-top:7px}
-.threatCheckBtn{display:block;width:100%;text-align:center;padding:10px 12px;min-height:44px;font-size:12.5px;line-height:1.4}
+.threatCheckBtn{display:inline-flex;width:auto;max-width:100%;align-items:center;justify-content:center;text-align:center;padding:7px 11px;min-height:34px;font-size:11.5px;font-weight:800;line-height:1.25;border-radius:9px;margin-top:1px}
 .versusFocus{border:1px solid #35485c;background:#162334;border-radius:12px;margin-top:10px;padding:12px;font-size:13px;line-height:1.5}
 .versusFocus p{color:#d8e3ed;margin:8px 0}
 .versusFocus small{display:block;color:var(--muted);margin-top:8px}
@@ -1167,6 +1167,148 @@ details{border-color:#2d4052;background:#121c27}
 #versusResult .team5QuickHead.mid b, #team5Result .team5QuickHead.mid b, .team5QuickHead.mid b{color:#ffe27a!important}
 #versusResult .team5QuickHead.mid span, #team5Result .team5QuickHead.mid span, .team5QuickHead.mid span{color:#ead79a!important}
 </style>
+
+<style id="finalVisualPolishV326">
+/* v3.26 — final visual polish. CSS only; calculation logic untouched. */
+:root{
+  --polish-panel:#121b25;
+  --polish-panel-2:#16212d;
+  --polish-line:#304356;
+  --polish-soft:#93a7b9;
+}
+body{
+  background:
+    radial-gradient(900px 520px at 50% -180px,rgba(238,113,35,.065),transparent 62%),
+    #0d1117;
+}
+.app{max-width:1140px;padding:19px 18px 22px}
+
+/* Compact header without wasting vertical space. */
+.testHeader{height:0!important;min-height:0!important;margin:0!important;padding:0!important;position:relative;z-index:120}
+.testMeta{margin:0!important;min-height:0!important;padding:0!important}
+.savedHint.show{
+  position:fixed;top:14px;right:14px;z-index:12000;
+  padding:7px 10px;border:1px solid rgba(86,173,119,.42);border-radius:10px;
+  background:rgba(19,38,28,.94);color:#b9f0ca;box-shadow:0 10px 28px rgba(0,0,0,.30);
+  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)
+}
+.teamSetupCard{padding:0 14px 14px;overflow:hidden}
+.teamBrandZone{min-height:154px;margin:0 -14px 12px;padding:16px 14px 14px;border-radius:13px 13px 0 0}
+.teamBrandWatermark{opacity:.92;filter:saturate(.98) contrast(1.025)}
+.teamBrandZone::after{background:linear-gradient(180deg,rgba(10,15,21,.04),rgba(10,15,21,.24) 72%,rgba(10,15,21,.62))}
+.teamBrandZone .aboutBox summary{width:31px;height:31px;min-height:31px;border-radius:9px;background:rgba(12,19,28,.78);border-color:rgba(126,149,172,.36)}
+.teamBrandZone .aboutBody{font-size:11.5px;line-height:1.43;background:rgba(12,19,27,.96)}
+
+/* Selected hero cards — cleaner hierarchy and more depth. */
+.formationGroup{box-shadow:0 5px 17px rgba(0,0,0,.10)}
+.formationBoard .slotCard{
+  min-height:146px;padding:10px 6px 9px;gap:5px;border-radius:15px;
+  background:linear-gradient(180deg,#152230 0%,#101923 100%);
+  border-color:#33495d;box-shadow:0 6px 18px rgba(0,0,0,.13),inset 0 1px rgba(255,255,255,.025)
+}
+.formationBoard .slotCard:hover{transform:translateY(-1px);box-shadow:0 9px 22px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.035)}
+.formationBoard .slotCard.filled{
+  background:linear-gradient(180deg,#1c2c3c 0%,#131e29 100%);
+  border-color:#587087;box-shadow:0 7px 19px rgba(0,0,0,.17),inset 0 1px rgba(255,255,255,.045)
+}
+.formationBoard .slotAvatar{
+  width:64px;height:64px;border-radius:17px;margin-bottom:1px;
+  background:transparent!important;border-color:transparent!important;
+  box-shadow:0 6px 15px rgba(0,0,0,.14)!important
+}
+.formationBoard .slotAvatar img{filter:drop-shadow(0 4px 7px rgba(0,0,0,.18))}
+.formationBoard .slotHeroName{font-size:11.7px;line-height:1.22;min-height:29px;height:auto;color:#eef4f8;letter-spacing:.005em}
+.formationBoard .slotHeroSub{font-size:9.5px;color:#91a7b9}
+.slotEffectBadges{gap:4px;margin-top:2px}
+.slotEffectBadge{min-height:21px;padding:3px 7px;font-size:9.3px;border-radius:8px;box-shadow:none}
+.slotInfo{right:6px;top:6px;width:30px;height:30px;min-height:30px;font-size:15px;border-color:#425a70}
+.slotDragHandle{left:6px;top:6px;width:25px;height:25px;border-radius:8px;background:rgba(10,17,25,.86);border-color:rgba(132,157,181,.45)}
+.formationUxHint{margin-top:2px;color:#8297aa}
+.actions{margin-top:10px;gap:8px}.actions button{min-height:40px;padding:8px 13px}
+
+/* Summary cards: lighter, less boxy. */
+.summary{gap:9px;margin-bottom:12px}
+.summary .box{padding:12px 13px;border-radius:13px;box-shadow:0 5px 16px rgba(0,0,0,.08)}
+.summary .box h2{font-size:16px;margin-bottom:8px}
+.summaryEmoji{width:22px;height:22px;font-size:12px}
+.summary .badge{font-size:11.3px;padding:5px 8px}
+.summary .row{padding:9px 10px}
+
+/* 5x5 outcome — make the answer the visual anchor. */
+.team5QuickHead{
+  padding:14px 15px!important;margin-bottom:10px!important;border-radius:14px!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.14)!important
+}
+.team5QuickHead b{font-size:18px!important;line-height:1.22!important;letter-spacing:.005em}
+.team5QuickHead span{font-size:10.5px!important;line-height:1.35!important;opacity:.88}
+.team5QuickHead.good.strong b,.team5QuickHead.bad.strong b{font-size:19px!important}
+
+/* Modern comparison bars. */
+.team5CoreGrid{gap:7px;margin:7px 0 8px}
+.team5CoreItem{padding:9px 10px;border-radius:11px;background:linear-gradient(180deg,#111b25,#0f1720);border-color:#2c4052}
+.team5CoreItemTop{gap:8px}.team5CoreItemTop span,.team5CoreItemTop b{font-size:11.5px}
+.team5Duel{gap:7px;margin-top:8px}
+.team5DuelRow{grid-template-columns:64px minmax(0,1fr) 30px;gap:7px}
+.team5DuelName,.team5DuelScore{font-size:10.5px}
+.team5DuelTrack{height:10px;background:#202e3b;border:1px solid rgba(123,148,171,.14);box-shadow:inset 0 1px 3px rgba(0,0,0,.34)}
+.team5DuelTrack>i{box-shadow:0 0 9px rgba(84,189,130,.20)}
+.team5DuelRow.enemy .team5DuelTrack>i{box-shadow:0 0 9px rgba(227,111,117,.18)}
+
+/* Analytics: 10–15% denser without shrinking useful text. */
+.team5QuickGrid{gap:8px}
+.team5QuickBlock{padding:10px 11px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.team5QuickBlock h3{font-size:13px;margin-bottom:7px}
+.team5QuickList{gap:4px;margin-top:5px}
+.team5QuickItem{font-size:11.6px;line-height:1.32}
+.team5QuickEmpty{font-size:11.2px;line-height:1.38;margin-top:5px}
+.team5Extra{margin-top:8px}.team5Extra>summary{padding:9px 10px;font-size:11.5px}
+.team5Details{margin:8px 0}.team5Details>summary{padding:9px 10px!important}
+.team5ScenarioRow,.team5Evidence,.team5VersusFact{padding:9px 10px!important}
+.team5SectionTitle{margin-bottom:7px!important}
+.view.card{padding:14px}
+.tabs{margin-bottom:11px}
+
+/* Consistent interaction surfaces. */
+.tabs button{min-height:41px;border-radius:10px}
+.mainNavBtn{border-radius:11px}
+.heroSearchBtn,.heroInfoBtn{border-radius:10px}
+
+/* Mobile: larger tap targets, compact vertical rhythm. */
+@media(max-width:650px){
+  .app{padding:9px 9px calc(111px + env(safe-area-inset-bottom,0px))}
+  body.tg-miniapp .app{padding-bottom:calc(113px + env(safe-area-inset-bottom,0px))}
+  .teamSetupCard{padding:0 9px 10px}
+  .teamBrandZone{min-height:138px;margin:0 -9px 9px;padding:12px 10px 11px}
+  .teamBrandZone .aboutBox summary{left:10px;bottom:9px;width:32px;height:32px;min-height:32px}
+  .teamBrandZone .aboutBody{left:10px;bottom:51px;width:calc(100% - 20px);max-height:118px}
+  .formationGroup{padding:7px;border-radius:12px}
+  .formationSlots{gap:5px}
+  .formationBoard .slotCard{min-height:120px;padding:7px 3px 6px;gap:3px;border-radius:13px}
+  .formationBoard .slotAvatar{width:55px;height:55px;border-radius:14px;margin-bottom:0}
+  .formationBoard .slotHeroName{font-size:10.8px;line-height:1.18;min-height:26px}
+  .slotEffectBadge{font-size:8.8px;min-height:19px;padding:3px 5px}
+  .slotInfo{width:32px;height:32px;min-height:32px;right:4px;top:4px}
+  .slotDragHandle{width:28px;height:28px;left:4px;top:4px;font-size:15px}
+  .actions button{min-height:44px}
+  .mainNavBtn{min-height:58px;font-size:11px}
+  .tabs button{min-height:43px;padding:8px 11px;font-size:11.5px}
+  .team5QuickHead{padding:12px 13px!important}
+  .team5QuickHead b{font-size:16.5px!important}
+  .team5QuickHead.good.strong b,.team5QuickHead.bad.strong b{font-size:17.5px!important}
+  .team5QuickBlock{padding:9px 10px}
+  .team5CoreItem{padding:8px 9px}
+  .team5DuelRow{grid-template-columns:58px minmax(0,1fr) 27px;gap:5px}
+  .team5DuelTrack{height:9px}
+  .view.card{padding:10px}
+  .summary .box{padding:11px}
+}
+@media(max-width:390px){
+  .formationBoard .slotAvatar{width:51px;height:51px}
+  .formationBoard .slotHeroName{font-size:10.3px}
+  .team5QuickHead b{font-size:16px!important}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1237,7 +1379,7 @@ details{border-color:#2d4052;background:#121c27}
 
 
 <section id="teamprofile" class="view active card">
-  <h2>Профиль пятёрки</h2>
+  <h2></h2>
   <div id="teamProfileResult"></div>
 </section>
 
@@ -1255,14 +1397,14 @@ details{border-color:#2d4052;background:#121c27}
 
 <section id="versus" class="view card">
   <h2>Проверка против конкретной расстановки</h2>
-  <div class="small" style="margin-bottom:10px">Ориентировочное сравнение составов, а не гарантия победы.</div>
+  <div class="small" style="margin-bottom:10px"></div>
 <div class="teamgrid" id="enemySelectors"></div>
   <div id="versusResult" style="margin-top:12px"></div>
 </section>
 
 <section id="replace" class="view card">
   <h2>Кого можно заменить</h2>
-  <div class="replaceIntro">В основные рекомендации попадают только замены, которые улучшают состав без заметного ухудшения других важных сценариев. <b>Зелёный</b> — что добавится, <b>красный</b> — что потеряется.</div>
+  <div class="replaceIntro"></div>
   <div id="replaceList" class="rows"></div>
 </section>
 
@@ -1344,7 +1486,7 @@ function tgHaptic(kind="light") {
 }
 
 
-const TEST_VERSION = "3.25-full-audit-optimized";
+const TEST_VERSION = "3.30-weakness-text-clean";
 const STORAGE_KEY = "nasledie_nindzya_state_v0151";
 let saveHintTimer = null;
 let toastTimer = null;
@@ -2567,6 +2709,27 @@ function unmetRequirements(t) {
 function weaknesses(t) {
   const r=[];
   if(!t.length)return r;
+
+  // Сначала оцениваем не только наличие механик, но и реальную силу пятёрки
+  // по тем же четырём осям, которые пользователь видит в «Профиле пятёрки».
+  // Иначе состав с Защитой 26/100 мог ошибочно получать «явных дыр нет».
+  if(t.length===5){
+    const e=team5Eval(t);
+    if(e){
+      const core=team5CoreQuality(e);
+      const axes=[
+        ["Давление",core.offense,"Низкое давление","Составу может не хватать урона и пробития, чтобы быстро закрывать опасные цели."],
+        ["Защита",core.defense,"Слабая защита","Состав плохо переносит ответное давление и слабо страхует ключевых героев."],
+        ["Контроль / срыв",core.disruption,"Слабый контроль / срыв","Мало надёжных способов остановить или задержать опасные действия противника."],
+        ["Командная поддержка",core.support,"Слабая командная поддержка","Мало командного лечения, сейва, усилений или другой помощи союзникам."]
+      ];
+      for(const [axis,raw,title,reason] of axes){
+        const score=Math.round(team5VisibleAxis(axis,raw));
+        if(score<35)r.push([title,reason]);
+      }
+    }
+  }
+
   if(!hasT(t,"antiheal")) r.push(["Нет подтверждённого антихила","Сильное лечение противника придётся продавить чистым уроном."]);
   if(!hasAny(t,controlKeys)) r.push(["Нет подтверждённого контроля","Мало способов сбивать опасные окна противника."]);
   if(!hasT(t,"cleanse")&&!hasT(t,"control_immunity")) r.push(["Нет явной защиты от контроля","Стан/печать/заморозка могут ломать темп."]);
@@ -2574,7 +2737,11 @@ function weaknesses(t) {
   if(!hasAny(t,tankPressureKeys)) r.push(["Мало инструментов против очень живучих целей","Не найден урон от максимального здоровья, истинный урон или пробитие защиты."]);
   const unmet=unmetRequirements(t);
   if(unmet.length)r.push(["Есть незакрытые условия",unmet.slice(0,2).join(" · ")]);
-  return r.slice(0,5);
+
+  // Не дублируем близкие формулировки и сначала оставляем самые явные провалы.
+  const seen=new Set(),out=[];
+  for(const x of r){const k=x[0];if(seen.has(k))continue;seen.add(k);out.push(x)}
+  return out.slice(0,5);
 }
 
 function featureList(t) {
@@ -2874,10 +3041,47 @@ function threatAnalysis(team,e){
   const priority=scenarios.reduce((v,x)=>v+x.score-(x.hasAnswer?.7:0),0);
   return {e,scenarios,primary,priority};
 }
-function threatCardHTML(item){
+function enemySlotState(){
+  return Array.from({length:5},(_,i)=>({i,sel:$('enemy'+i),id:$('enemy'+i)?.value||'',position:i<2?'front':'back'}));
+}
+function threatPlacementPlan(team,e){
+  const slots=enemySlotState();
+  const existing=slots.find(x=>x.id===String(e.id));
+  if(existing)return {mode:'existing',index:existing.i,label:`${selectorName(e)} уже в составе`};
+
+  const empty=slots.filter(x=>!x.id);
+  if(empty.length){
+    // Если свободно одно место, это и есть однозначный вариант. При нескольких
+    // свободных местах не выдумываем «идеальную» позицию без полной пятёрки.
+    const slot=empty[0];
+    return {mode:'add',index:slot.i,label:`Добавить ${selectorName(e)}`};
+  }
+
+  // Полный состав противника: перебираем все пять замен и выбираем ту,
+  // которая делает противника наиболее опасным именно против нашей пятёрки.
+  let best=null;
+  for(const slot of slots){
+    const variant=slots.map((s,j)=>{
+      const base=j===slot.i?e:byId[s.id];
+      return base?{...base,position:j<2?'front':'back',slot:j}:null;
+    }).filter(Boolean);
+    if(variant.length!==5)continue;
+    const m=team5Matchup(team,variant);
+    if(!m)continue;
+    if(!best||m.edge<best.edge)best={mode:'replace',index:slot.i,edge:m.edge,target:byId[slot.id]};
+  }
+  if(best){
+    best.label=`${selectorName(e)} вместо ${selectorName(best.target)}`;
+    return best;
+  }
+  return {mode:'replace',index:0,target:byId[slots[0].id],label:`${selectorName(e)} вместо ${selectorName(byId[slots[0].id])}`};
+}
+function threatCardHTML(item,team){
   const {e,scenarios,primary}=item;
   const src=heroPortraitSrc(e);
   const icon=src?`<img loading="lazy" decoding="async" src="${src}" alt="">`:esc(heroMark(e));
+  const plan=threatPlacementPlan(team,e);
+  const buttonText=plan.mode==='existing'?`⚔ Открыть 5×5 · ${selectorName(e)}`:`⚔ ${plan.label}`;
   const blocks=scenarios.map((x,i)=>`<div class="threatMechanic${i===0?' primary':''}">
     <div class="threatMechanicHead">${esc(x.title)}</div>
     <p>${esc(x.why)}</p>
@@ -2889,7 +3093,7 @@ function threatCardHTML(item){
     <div class="threatHeroHead"><div class="threatPortrait">${icon}</div><div class="threatHeroText"><h3>${esc(selectorName(e))}</h3><div class="threatMainLabel">${esc(primary.title)}</div></div></div>
     <div class="threatSummary">${esc(primary.why)}</div>
     <details class="threatDetails"><summary>Кого затрагивает и чем ответить${scenarios.length>1?` · ${scenarios.length} механики`:''}</summary><div class="threatDetailsBody">${blocks}</div></details>
-    <button type="button" class="threatCheckBtn" data-threat-id="${esc(e.id)}">⚔ Проверить против ${esc(selectorName(e))}</button>
+    <button type="button" class="threatCheckBtn" data-threat-id="${esc(e.id)}" data-threat-slot="${plan.index}">${esc(buttonText)}</button>
   </article>`;
 }
 function renderThreats(){
@@ -2901,20 +3105,30 @@ function renderThreats(){
   const selected=[],seenIds=new Set(),used=new Set();
   for(const item of all){if(!used.has(item.primary.key)){selected.push(item);used.add(item.primary.key);seenIds.add(item.e.id);}if(selected.length>=5)break;}
   for(const item of all){if(selected.length>=5)break;if(!seenIds.has(item.e.id)){selected.push(item);seenIds.add(item.e.id);}}
-  node.innerHTML=selected.length?selected.map(threatCardHTML).join(''):'<div class="mutedblock">По текущим правилам нет явных адресных угроз. Это не означает, что команда неуязвима.</div>';
+  node.innerHTML=selected.length?selected.map(item=>threatCardHTML(item,team)).join(''):'<div class="mutedblock">По текущим правилам нет явных адресных угроз. Это не означает, что команда неуязвима.</div>';
 }
 let threatFocusId="";
-function focusThreatInVersus(id){
+function focusThreatInVersus(id,preferredIndex=null){
   const e=byId[id];if(!e||!ACTIVE_IDS.has(String(id)))return;
   threatFocusId=String(id);
   const slots=Array.from({length:5},(_,i)=>$('enemy'+i));
   let index=slots.findIndex(sel=>sel.value===String(id));
-  if(index<0){index=slots.findIndex(sel=>!sel.value);if(index<0)index=0;
+  if(index<0){
+    const hasPreferred=preferredIndex!==null&&preferredIndex!==undefined&&String(preferredIndex)!=='';
+    const parsed=hasPreferred?Number(preferredIndex):NaN;
+    if(Number.isInteger(parsed)&&parsed>=0&&parsed<5)index=parsed;
+    else{
+      const plan=threatPlacementPlan(getTeam('team'),e);
+      index=plan.index;
+    }
+    if(!Number.isInteger(index)||index<0||index>4)index=slots.findIndex(sel=>!sel.value);
+    if(index<0)index=0;
+    const old=byId[slots[index].value];
     slots[index].value=String(id);
     slots[index].dispatchEvent(new Event('change',{bubbles:true}));
+    showToast(old?`${selectorName(e)} вместо ${selectorName(old)}`:'Добавлен противник: '+selectorName(e));
   }
   switchView('versus',true);
-  showToast('Добавлен противник: '+selectorName(e));
 }
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -3277,7 +3491,7 @@ function team5Eval(t){
   return result;
 }
 function team5ScenarioClass(v){return v>=.44?'strong':v<.25?'risk':''}
-function team5OverallLabel(v){const x=v*100;if(x>=42)return ['Очень устойчивый состав','good'];if(x>=36)return ['Устойчивый состав','good'];if(x>=31)return ['Рабочий состав','mid'];if(x>=26)return ['Есть уязвимые сценарии','mid'];return ['Выраженные уязвимости','bad']}
+function team5OverallLabel(v){const x=v*100;if(x>=42)return ['Очень устойчивый состав','good'];if(x>=36)return ['Устойчивый состав','good'];if(x>=31)return ['Рабочий состав','mid'];if(x>=26)return ['','mid'];return ['Выраженные уязвимости','bad']}
 function team5ScenarioList(e,dir='asc'){return TEAM_SCENARIOS.map((name,i)=>({name,i,v:e.scenarios[i]})).sort((a,b)=>dir==='asc'?a.v-b.v:b.v-a.v)}
 function team5ScenarioCards(e){return TEAM_SCENARIOS.map((name,i)=>{const v=e.scenarios[i],cls=team5ScenarioClass(v);return `<div class="scenarioCard ${cls}"><div class="scenarioHead"><b>${esc(name)}</b><span>${(v*100).toFixed(0)}</span></div><div class="scenarioBar"><div class="scenarioFill" style="width:${clamp(v*100,2,100)}%"></div></div></div>`}).join('')}
 // Значения ниже — показатели модели, не проценты побед и не отдельный рейтинг героя.
@@ -3374,7 +3588,7 @@ function renderTeamProfile(){
   const tm=e.timeline.unknown?`Для ${e.timeline.unknown} персонаж(ей) в базе нет подтверждённого стартового значения энергии; порядок ульт ориентировочный.`:'Порядок первых ульт — расчётный ориентир, не запись реального боя.';
   root.innerHTML=`
     <div class="team5Headline"><div><div class="team5Index">Возможности пятёрки</div></div><span class="team5Label ${lab[1]}">${lab[0]}</span></div>
-    <h3 class="team5SectionTitle">Боевой фундамент пятёрки</h3>
+    <h3 class="team5SectionTitle"></h3>
 
     <div class="team5CoreGrid">
       ${team5AxisItem('Давление',core.offense,teRoleDisplay(e,'carry'))}
@@ -3874,7 +4088,7 @@ function renderVersus() {
   const groupedDetail=(groups,kind)=>groups.length?groups.map(g=>team5GroupDetail(g,kind)).join(''):'<p class="team5QuickEmpty">Явных взаимодействий не выделено.</p>';
   const edgeHeadClass=Math.abs(m.edge)<.02?'mid':Math.abs(m.edge)<.045?'warn':m.edge>0?(Math.abs(m.edge)>=.12?'good strong':'good'):m.edge<0?(Math.abs(m.edge)>=.12?'bad strong':'bad'):'mid';
   root.innerHTML=`
-    <div class="team5QuickHead ${edgeHeadClass}"><b>${esc(lab[0])}</b><span>Ориентировочное сравнение составов, не гарантия победы.</span></div>
+    <div class="team5QuickHead ${edgeHeadClass}"><b>${esc(lab[0])}</b><span></span></div>
     <section class="team5ScaleSummary" aria-label="Сравнение команд по пяти механикам">
       <h3 class="team5SectionTitle">Сравнение команд</h3>
       <div class="team5CoreGrid">${core.map(x=>team5VersusAxisItem(x.label,x.a,x.b)).join('')}</div>
@@ -4485,7 +4699,7 @@ function recalc(){
   if(cleaned)setTimeout(()=>showToast("Кормовой персонаж или дубль удалён из состава"),30);
   if(teamChanged){renderPositionNotes();renderSummary();}
   if(teamChanged){deferredViewDirty=new Set(DEFERRED_VIEWS);}
-  else if(enemyChanged){deferredViewDirty.add('versus');deferredViewDirty.add('replace');}
+  else if(enemyChanged){deferredViewDirty.add('versus');deferredViewDirty.add('replace');deferredViewDirty.add('threats');}
   refreshDeferredView(activeViewId());
   LAST_TEAM_UI_SIG=teamSig;LAST_ENEMY_UI_SIG=enemySig;
   saveState(false);
@@ -4513,7 +4727,7 @@ document.querySelectorAll('.tierRoleBtn').forEach(btn=>btn.addEventListener('cli
 }));
 $('badTargets').addEventListener('click',e=>{
   const btn=e.target.closest('[data-threat-id]');
-  if(btn){tgHaptic('light');focusThreatInVersus(btn.dataset.threatId);}
+  if(btn){tgHaptic('light');focusThreatInVersus(btn.dataset.threatId,btn.dataset.threatSlot);}
 });
 
 $('heroSearchClose').addEventListener('click',closeHeroSearch);
